@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { TextInput, Button, useTheme, Text, SegmentedButtons, Avatar } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { TextInput, Button, useTheme, Text, SegmentedButtons, Avatar, IconButton } from 'react-native-paper';
 import { router } from 'expo-router';
 import { getVehicles, Vehicle, addMaintenanceEvent } from '../db/queries';
 
@@ -13,6 +13,9 @@ export default function AddMaintenanceScreen() {
   const [garage, setGarage] = useState('');
   const [odometer, setOdometer] = useState('');
   const [receiptUri, setReceiptUri] = useState('');
+  
+  // Dynamic list of service items
+  const [items, setItems] = useState([{ service_type: '', price: '' }]);
 
   useEffect(() => {
     const load = async () => {
@@ -26,22 +29,44 @@ export default function AddMaintenanceScreen() {
     load();
   }, []);
 
+  const handleAddItem = () => {
+    setItems([...items, { service_type: '', price: '' }]);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const newItems = [...items];
+    newItems.splice(index, 1);
+    setItems(newItems);
+  };
+
+  const handleUpdateItem = (index: number, field: 'service_type' | 'price', value: string) => {
+    const newItems = [...items];
+    newItems[index][field] = value;
+    setItems(newItems);
+  };
+
   const handleSave = async () => {
     try {
       if (!selectedVehicleId || !odometer) {
         Alert.alert('Error', 'Please select a vehicle and enter the odometer reading.');
         return;
       }
-      
-      const eventId = await addMaintenanceEvent({
+
+      // Filter out completely empty items
+      const validItems = items.filter(item => item.service_type.trim() !== '' || item.price.trim() !== '');
+
+      await addMaintenanceEvent({
         vehicle_id: parseInt(selectedVehicleId),
         date,
         garage,
         odometer: parseInt(odometer),
-        receipt_image_uri: receiptUri
+        receipt_image_uri: receiptUri,
+        items: validItems.map(item => ({
+          service_type: item.service_type || 'General Service',
+          price: parseFloat(item.price.replace(',', '.')) || 0
+        }))
       });
       
-      Alert.alert('Success', 'Maintenance event saved! (Service item logging coming soon)');
       router.back();
     } catch (e: any) {
       console.error(e);
@@ -57,6 +82,8 @@ export default function AddMaintenanceScreen() {
       </View>
     );
   }
+
+  const totalPrice = items.reduce((sum, item) => sum + (parseFloat(item.price.replace(',', '.')) || 0), 0);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -84,6 +111,45 @@ export default function AddMaintenanceScreen() {
         <Button onPress={() => Alert.alert('Coming Soon', 'Photo upload coming soon')}>Upload Receipt</Button>
       </View>
 
+      <Text style={[styles.label, { marginTop: 16 }]}>Service Items & Parts</Text>
+      {items.map((item, index) => (
+        <View key={index} style={styles.itemRow}>
+          <TextInput 
+            label="Item (e.g. Oil Change)" 
+            value={item.service_type} 
+            onChangeText={(val) => handleUpdateItem(index, 'service_type', val)} 
+            style={[styles.input, { flex: 2, marginBottom: 0 }]} 
+          />
+          <TextInput 
+            label="€ Price" 
+            value={item.price} 
+            onChangeText={(val) => handleUpdateItem(index, 'price', val)} 
+            keyboardType="decimal-pad" 
+            style={[styles.input, { flex: 1, marginBottom: 0 }]} 
+          />
+          {items.length > 1 && (
+            <IconButton 
+              icon="delete" 
+              iconColor={theme.colors.error}
+              size={24}
+              onPress={() => handleRemoveItem(index)}
+              style={{ alignSelf: 'center', margin: 0 }}
+            />
+          )}
+        </View>
+      ))}
+
+      <Button icon="plus" mode="outlined" onPress={handleAddItem} style={styles.addItemBtn}>
+        Add Another Item
+      </Button>
+
+      <View style={styles.totalRow}>
+        <Text variant="titleMedium">Total Cost:</Text>
+        <Text variant="headlineSmall" style={{ color: theme.colors.primary, fontWeight: 'bold' }}>
+          €{totalPrice.toFixed(2)}
+        </Text>
+      </View>
+
       <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
         Save Maintenance Log
       </Button>
@@ -106,6 +172,23 @@ const styles = StyleSheet.create({
   photoContainer: {
     alignItems: 'center',
     marginVertical: 16,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  addItemBtn: {
+    marginBottom: 24,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#ffffff20',
+    marginBottom: 16,
   },
   saveBtn: {
     marginBottom: 40,

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { LayoutDashboard, Car, Wrench } from 'lucide-react-native';
+import { LayoutDashboard, Car, Wrench, ClipboardList } from 'lucide-react-native';
 import { useColorScheme } from 'react-native';
 import { Colors } from '@/constants/theme';
 
@@ -32,6 +32,13 @@ export default function TabLayout() {
         options={{
           title: 'Accessories',
           tabBarIcon: ({ color }) => <Wrench size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="logs"
+        options={{
+          title: 'Logs',
+          tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
         }}
       />
     </Tabs>
