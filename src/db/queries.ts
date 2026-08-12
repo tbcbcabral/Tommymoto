@@ -13,8 +13,10 @@ export interface Vehicle {
 }
 
 export const addVehicle = async (vehicle: Omit<Vehicle, 'id'>) => {
-  const db = await getDb();
-  const result = await db.runAsync(
+  try {
+    console.log("Adding vehicle with data:", vehicle);
+    const db = await getDb();
+    const result = await db.runAsync(
     'INSERT INTO vehicles (make, model, license_plate, year, alias, is_default, default_fuel_type, profile_photo_uri) VALUES ($make, $model, $license_plate, $year, $alias, $is_default, $default_fuel_type, $profile_photo_uri)',
     {
       $make: vehicle.make || '',
@@ -26,8 +28,13 @@ export const addVehicle = async (vehicle: Omit<Vehicle, 'id'>) => {
       $default_fuel_type: vehicle.default_fuel_type || '',
       $profile_photo_uri: vehicle.profile_photo_uri || ''
     }
-  );
-  return result.lastInsertRowId;
+    );
+    console.log("✅ Vehicle inserted, row ID:", result.lastInsertRowId);
+    return result.lastInsertRowId;
+  } catch (error) {
+    console.error("❌ Failed to insert vehicle:", error);
+    throw error;
+  }
 };
 
 export const getVehicles = async (): Promise<Vehicle[]> => {
@@ -71,6 +78,30 @@ export const addRefuelingEvent = async (event: Omit<RefuelingEvent, 'id'>) => {
       $total_price: event.total_price,
       $odometer: event.odometer,
       $is_full_tank: event.is_full_tank ?? 1
+    }
+  );
+  return result.lastInsertRowId;
+};
+
+export type MaintenanceEvent = {
+  id: number;
+  vehicle_id: number;
+  date: string;
+  garage: string;
+  odometer: number;
+  receipt_image_uri: string;
+};
+
+export const addMaintenanceEvent = async (event: Omit<MaintenanceEvent, 'id'>) => {
+  const db = await getDb();
+  const result = await db.runAsync(
+    'INSERT INTO maintenance_events (vehicle_id, date, garage, odometer, receipt_image_uri) VALUES ($vehicle_id, $date, $garage, $odometer, $receipt_image_uri)',
+    {
+      $vehicle_id: event.vehicle_id,
+      $date: event.date,
+      $garage: event.garage || '',
+      $odometer: event.odometer,
+      $receipt_image_uri: event.receipt_image_uri || ''
     }
   );
   return result.lastInsertRowId;

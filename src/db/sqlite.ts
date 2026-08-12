@@ -5,10 +5,11 @@ export const getDb = async () => {
 };
 
 export const initDb = async () => {
-  const db = await getDb();
-  
-  await db.runAsync('PRAGMA journal_mode = WAL;');
-  await db.runAsync('PRAGMA foreign_keys = ON;');
+  try {
+    const db = await getDb();
+    
+    await db.runAsync('PRAGMA journal_mode = WAL;');
+    await db.runAsync('PRAGMA foreign_keys = ON;');
 
   await db.runAsync(`
     CREATE TABLE IF NOT EXISTS vehicles (
@@ -84,4 +85,9 @@ export const initDb = async () => {
       FOREIGN KEY (vehicle_id) REFERENCES vehicles (id) ON DELETE CASCADE
     );
   `);
+    console.log("✅ Database initialized successfully");
+  } catch (error) {
+    console.error("❌ Failed to initialize database:", error);
+    throw error;
+  }
 };
