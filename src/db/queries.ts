@@ -1,4 +1,4 @@
-import { getDb } from './sqlite';
+import { supabase } from '../lib/supabase';
 
 export interface Vehicle {
   id: number;
@@ -7,50 +7,116 @@ export interface Vehicle {
   license_plate: string;
   year: number;
   alias: string;
-  is_default: number;
+  is_default: number; // Supabase returns boolean for booleans usually, but let's keep it as number to avoid massive UI refactoring, or we can use boolean. In our schema it's boolean. Let's map it.
   default_fuel_type: string;
   profile_photo_uri: string;
+  is_archived: boolean;
 }
 
-export const addVehicle = async (vehicle: Omit<Vehicle, 'id'>) => {
+export const addVehicle = async (vehicle: Omit<Vehicle, 'id' | 'is_archived'>) => {
   try {
-    console.log("Adding vehicle with data:", vehicle);
-    const db = await getDb();
-    const result = await db.runAsync(
-    'INSERT INTO vehicles (make, model, license_plate, year, alias, is_default, default_fuel_type, profile_photo_uri) VALUES ($make, $model, $license_plate, $year, $alias, $is_default, $default_fuel_type, $profile_photo_uri)',
-    {
-      $make: vehicle.make || '',
-      $model: vehicle.model || '',
-      $license_plate: vehicle.license_plate || '',
-      $year: vehicle.year,
-      $alias: vehicle.alias || '',
-      $is_default: vehicle.is_default || 0,
-      $default_fuel_type: vehicle.default_fuel_type || '',
-      $profile_photo_uri: vehicle.profile_photo_uri || ''
-    }
-    );
-    console.log("✅ Vehicle inserted, row ID:", result.lastInsertRowId);
-    return result.lastInsertRowId;
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert([
+        {
+          make: vehicle.make || '',
+          model: vehicle.model || '',
+          license_plate: vehicle.license_plate || '',
+          year: vehicle.year,
+          alias: vehicle.alias || '',
+          is_default: Boolean(vehicle.is_default),
+          default_fuel_type: vehicle.default_fuel_type || '',
+          profile_photo_uri: vehicle.profile_photo_uri || '',
+          is_archived: false,
+        }
+      ])
+      .select('id')
+      .single();
+
+    if (error) throw error;
+    console.log("✅ Vehicle inserted via Supabase, row ID:", data.id);
+    return data.id;
   } catch (error) {
-    console.error("❌ Failed to insert vehicle:", error);
+    console.error("❌ Failed to insert vehicle to Supabase:", error);
     throw error;
   }
 };
 
 export const getVehicles = async (): Promise<Vehicle[]> => {
-  const db = await getDb();
-  return await db.getAllAsync<Vehicle>('SELECT * FROM vehicles ORDER BY id DESC');
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select('*')
+    .eq('is_archived', false)
+    .order('id', { ascending: false });
+    
+  if (error) throw error;
+  
+  // Map boolean back to number for UI compatibility
+  return (data || []).map(v => ({
+    ...v,
+    is_default: v.is_default ? 1 : 0
+  }));
+};
+
+export const getArchivedVehicles = async (): Promise<Vehicle[]> => {
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select('*')
+    .eq('is_archived', true)
+    .order('id', { ascending: false });
+    
+  if (error) throw error;
+  
+  return (data || []).map(v => ({
+    ...v,
+    is_default: v.is_default ? 1 : 0
+  }));
 };
 
 export const setDefaultVehicle = async (id: number) => {
-  const db = await getDb();
-  await db.runAsync('UPDATE vehicles SET is_default = 0');
-  await db.runAsync('UPDATE vehicles SET is_default = 1 WHERE id = ?', id);
+  try {
+    // Reset all to 0
+    await supabase.from('vehicles').update({ is_default: false }).neq('id', 0);
+    // Set target to 1
+    const { error } = await supabase.from('vehicles').update({ is_default: true }).eq('id', id);
+    if (error) throw error;
+  } catch (error) {
+    console.error("Failed to set default vehicle:", error);
+    throw error;
+  }
 };
 
-export const deleteVehicle = async (id: number) => {
-  const db = await getDb();
-  await db.runAsync('DELETE FROM vehicles WHERE id = ?', id);
+export const archiveVehicle = async (id: number) => {
+  try {
+    const { error } = await supabase.from('vehicles').update({ is_archived: true, is_default: false }).eq('id', id);
+    if (error) throw error;
+    console.log("✅ Vehicle archived:", id);
+  } catch (error) {
+    console.error("Failed to archive vehicle:", error);
+    throw error;
+  }
+};
+
+export const restoreVehicle = async (id: number) => {
+  try {
+    const { error } = await supabase.from('vehicles').update({ is_archived: false }).eq('id', id);
+    if (error) throw error;
+    console.log("✅ Vehicle restored:", id);
+  } catch (error) {
+    console.error("Failed to restore vehicle:", error);
+    throw error;
+  }
+};
+
+// Permanently delete a vehicle
+export const permanentlyDeleteVehicle = async (id: number) => {
+  try {
+    const { error } = await supabase.from('vehicles').delete().eq('id', id);
+    if (error) throw error;
+  } catch (error) {
+    console.error("Failed to permanently delete vehicle:", error);
+    throw error;
+  }
 };
 
 export type RefuelingEvent = {
@@ -66,21 +132,25 @@ export type RefuelingEvent = {
 };
 
 export const addRefuelingEvent = async (event: Omit<RefuelingEvent, 'id'>) => {
-  const db = await getDb();
-  const result = await db.runAsync(
-    'INSERT INTO refueling_events (vehicle_id, date, liters, fuel_type, petrol_station_brand, total_price, odometer, is_full_tank) VALUES ($vehicle_id, $date, $liters, $fuel_type, $petrol_station_brand, $total_price, $odometer, $is_full_tank)',
-    {
-      $vehicle_id: event.vehicle_id,
-      $date: event.date,
-      $liters: event.liters,
-      $fuel_type: event.fuel_type || '',
-      $petrol_station_brand: event.petrol_station_brand || '',
-      $total_price: event.total_price,
-      $odometer: event.odometer,
-      $is_full_tank: event.is_full_tank ?? 1
-    }
-  );
-  return result.lastInsertRowId;
+  const { data, error } = await supabase
+    .from('refueling_events')
+    .insert([
+      {
+        vehicle_id: event.vehicle_id,
+        date: event.date,
+        liters: event.liters,
+        fuel_type: event.fuel_type || '',
+        petrol_station_brand: event.petrol_station_brand || '',
+        total_price: event.total_price,
+        odometer: event.odometer,
+        is_full_tank: Boolean(event.is_full_tank ?? 1)
+      }
+    ])
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
 };
 
 export type MaintenanceEvent = {
@@ -93,16 +163,20 @@ export type MaintenanceEvent = {
 };
 
 export const addMaintenanceEvent = async (event: Omit<MaintenanceEvent, 'id'>) => {
-  const db = await getDb();
-  const result = await db.runAsync(
-    'INSERT INTO maintenance_events (vehicle_id, date, garage, odometer, receipt_image_uri) VALUES ($vehicle_id, $date, $garage, $odometer, $receipt_image_uri)',
-    {
-      $vehicle_id: event.vehicle_id,
-      $date: event.date,
-      $garage: event.garage || '',
-      $odometer: event.odometer,
-      $receipt_image_uri: event.receipt_image_uri || ''
-    }
-  );
-  return result.lastInsertRowId;
+  const { data, error } = await supabase
+    .from('maintenance_events')
+    .insert([
+      {
+        vehicle_id: event.vehicle_id,
+        date: event.date,
+        garage: event.garage || '',
+        odometer: event.odometer,
+        receipt_image_uri: event.receipt_image_uri || ''
+      }
+    ])
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
 };

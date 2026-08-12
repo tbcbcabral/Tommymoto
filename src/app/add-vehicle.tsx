@@ -10,6 +10,19 @@ export default function AddVehicleScreen() {
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
+  
+  const handleLicensePlateChange = (text: string) => {
+    const cleaned = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    let formatted = '';
+    for (let i = 0; i < cleaned.length; i++) {
+      if (i > 0 && i % 2 === 0 && i < 6) {
+        formatted += '-';
+      }
+      formatted += cleaned[i];
+    }
+    setLicensePlate(formatted.slice(0, 8));
+  };
+
   const [year, setYear] = useState('');
   const [alias, setAlias] = useState('');
   const [fuelType, setFuelType] = useState('');
@@ -20,6 +33,11 @@ export default function AddVehicleScreen() {
     try {
       if (!make || !model) {
         Alert.alert('Error', 'Make and Model are required.');
+        return;
+      }
+      
+      if (licensePlate && !/^[A-Z0-9]{2}-[A-Z0-9]{2}-[A-Z0-9]{2}$/.test(licensePlate)) {
+        Alert.alert('Error', 'License Plate must be in the format XX-XX-XX.');
         return;
       }
       
@@ -54,7 +72,7 @@ export default function AddVehicleScreen() {
 
       <TextInput label="Make *" value={make} onChangeText={setMake} style={styles.input} />
       <TextInput label="Model *" value={model} onChangeText={setModel} style={styles.input} />
-      <TextInput label="License Plate" value={licensePlate} onChangeText={setLicensePlate} style={styles.input} autoCapitalize="characters" />
+      <TextInput label="License Plate (XX-XX-XX)" value={licensePlate} onChangeText={handleLicensePlateChange} style={styles.input} />
       <TextInput label="Year" value={year} onChangeText={setYear} keyboardType="numeric" style={styles.input} />
       <TextInput label="Alias (Nickname)" value={alias} onChangeText={setAlias} style={styles.input} />
       <TextInput label="Default Fuel Type" value={fuelType} onChangeText={setFuelType} style={styles.input} />

@@ -1,56 +1,57 @@
-# Welcome to your Expo app 👋
+# Mototommy 🏍️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mototommy is a sleek, local-first garage management and vehicle tracking application built with **Expo (React Native)** and **Supabase**. It helps you keep track of all your vehicles, their refueling history, and maintenance logs—all instantly accessible from any device.
 
-## Get started
+## ✨ Features
 
-1. Install dependencies
+- **Virtual Garage**: Add all your vehicles (cars, motorcycles, etc.) with custom profile photos, license plates (strictly formatted), and nicknames.
+- **Refueling Logs**: Track your fuel consumption, total price paid, and odometer readings. Includes a "Full Tank" toggle to help calculate average L/100km statistics.
+- **Maintenance Tracking**: Log your garage visits, odometer readings, and (coming soon) attach photo receipts for every service item.
+- **Vehicle Archiving**: Safely hide vehicles from your main garage without permanently destroying their historical data. 
+- **Cloud Syncing**: Powered by Supabase, your data is securely stored in the cloud so you can access your garage from your phone, tablet, or PC browser.
+- **Instant Backups**: Export a complete JSON backup of your entire database directly from the app dashboard with a single tap.
 
+## 🚀 Tech Stack
+
+- **Framework**: [Expo](https://expo.dev/) (React Native) + Expo Router
+- **UI Components**: [React Native Paper](https://callstack.github.io/react-native-paper/)
+- **Database**: [Supabase](https://supabase.com/) (PostgreSQL)
+- **Styling**: Vanilla Stylesheets + Expo Router ThemeProvider
+
+## 🛠️ Getting Started
+
+### Prerequisites
+1. Node.js installed on your machine.
+2. An active Supabase project.
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/tbcbcabral/Mototommy.git
+   cd Mototommy
+   ```
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
+### Supabase Setup
+You need to create the required tables in your Supabase project.
+1. Open your Supabase Dashboard -> SQL Editor.
+2. Run the schema found in the project's documentation to create the `vehicles`, `refueling_events`, and `maintenance_events` tables.
+3. Replace the `supabaseUrl` and `supabaseAnonKey` in `src/lib/supabase.ts` with your own project credentials.
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### Running the App
+Start the Expo development server:
 ```bash
-npm run reset-project
+npx expo start
 ```
+- Press `a` to open in an Android Emulator.
+- Press `i` to open in an iOS Simulator.
+- Press `w` to run the app in your Web Browser.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/tbcbcabral/Mototommy/issues).
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📝 License
+This project is licensed under the MIT License.

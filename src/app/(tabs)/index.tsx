@@ -1,11 +1,36 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Card, Title, Paragraph, FAB, useTheme } from 'react-native-paper';
+import { Text, Card, Title, Paragraph, FAB, useTheme, Button } from 'react-native-paper';
 import { useState } from 'react';
 import { router } from 'expo-router';
+import { supabase } from '../lib/supabase';
+import { Alert, Share } from 'react-native';
 
 export default function DashboardScreen() {
   const theme = useTheme();
   const [fabOpen, setFabOpen] = useState(false);
+
+  const handleBackup = async () => {
+    try {
+      const { data: vehicles } = await supabase.from('vehicles').select('*');
+      const { data: refuels } = await supabase.from('refueling_events').select('*');
+      const { data: maintenance } = await supabase.from('maintenance_events').select('*');
+      
+      const backupData = JSON.stringify({
+        export_date: new Date().toISOString(),
+        vehicles,
+        refueling_events: refuels,
+        maintenance_events: maintenance
+      }, null, 2);
+
+      await Share.share({
+        message: backupData,
+        title: 'Mototommy Backup Data'
+      });
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Backup Failed", "Could not fetch data from Supabase.");
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -41,6 +66,15 @@ export default function DashboardScreen() {
             <Paragraph>No upcoming maintenance.</Paragraph>
           </Card.Content>
         </Card>
+
+        <Button 
+          mode="outlined" 
+          icon="database-export" 
+          style={{ marginTop: 24, marginBottom: 80 }} 
+          onPress={handleBackup}
+        >
+          Export Cloud Data Backup
+        </Button>
       </ScrollView>
 
       <FAB.Group

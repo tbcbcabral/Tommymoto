@@ -3,27 +3,15 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
-import { useEffect, useState } from 'react';
-import { initDb } from '../db/sqlite';
+import { useEffect } from 'react';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [dbInitialized, setDbInitialized] = useState(false);
-  
   useEffect(() => {
-    initDb().then(() => {
-      setDbInitialized(true);
-      SplashScreen.hideAsync();
-    }).catch(err => {
-      console.error("DB Init error:", err);
-      setDbInitialized(true);
-      SplashScreen.hideAsync();
-    });
+    SplashScreen.hideAsync();
   }, []);
-
-  if (!dbInitialized) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -34,6 +22,7 @@ export default function RootLayout() {
           <Stack.Screen name="add-refuel" options={{ presentation: 'modal', title: 'Log Refuel' }} />
           <Stack.Screen name="add-maintenance" options={{ presentation: 'modal', title: 'Log Maintenance' }} />
           <Stack.Screen name="add-accessory" options={{ presentation: 'modal', title: 'Add Accessory' }} />
+          <Stack.Screen name="archived" options={{ presentation: 'modal', title: 'Archived Vehicles' }} />
         </Stack>
       </PaperProvider>
     </ThemeProvider>

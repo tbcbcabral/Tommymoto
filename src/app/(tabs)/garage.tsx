@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, Card, Title, Button, FAB, useTheme, Avatar, IconButton } from 'react-native-paper';
-import { Link, router } from 'expo-router';
-import { getVehicles, Vehicle, setDefaultVehicle, deleteVehicle } from '../../db/queries';
+import { Link, router, useFocusEffect } from 'expo-router';
+import { getVehicles, Vehicle, setDefaultVehicle, archiveVehicle } from '../../db/queries';
 
 export default function GarageScreen() {
   const theme = useTheme();
@@ -13,9 +13,11 @@ export default function GarageScreen() {
     setVehicles(data);
   };
 
-  useEffect(() => {
-    loadVehicles();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadVehicles();
+    }, [])
+  );
 
   const handleSetDefault = async (id: number) => {
     await setDefaultVehicle(id);
@@ -24,15 +26,15 @@ export default function GarageScreen() {
 
   const handleDelete = (id: number, make: string, model: string) => {
     Alert.alert(
-      "Delete Vehicle",
-      `Are you sure you want to delete ${make} ${model}? This will also delete ALL its refueling and maintenance logs forever!`,
+      "Archive Vehicle",
+      `Are you sure you want to archive ${make} ${model}? It will be hidden from the garage.`,
       [
         { text: "Cancel", style: "cancel" },
         { 
-          text: "Delete", 
+          text: "Archive", 
           style: "destructive",
           onPress: async () => {
-            await deleteVehicle(id);
+            await archiveVehicle(id);
             loadVehicles();
           }
         }
@@ -70,11 +72,19 @@ export default function GarageScreen() {
                   <Button onPress={() => handleSetDefault(v.id)}>Set as Default</Button>
                 )}
                 <Button mode="outlined" onPress={() => Alert.alert('Coming Soon', 'Edit vehicle functionality coming soon!')}>Edit</Button>
-                <Button mode="outlined" textColor={theme.colors.error} onPress={() => handleDelete(v.id, v.make, v.model)}>Delete</Button>
+                <Button mode="outlined" textColor={theme.colors.error} onPress={() => handleDelete(v.id, v.make, v.model)}>Archive</Button>
               </Card.Actions>
             </Card>
           ))
         )}
+        <Button 
+          mode="text" 
+          icon="archive" 
+          onPress={() => router.push('/archived')}
+          style={{ marginTop: 20 }}
+        >
+          View Archived Vehicles
+        </Button>
       </ScrollView>
 
       <FAB
