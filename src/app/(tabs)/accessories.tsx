@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Card, Title, FAB, useTheme } from 'react-native-paper';
 import { router, useFocusEffect } from 'expo-router';
 import { getAccessories } from '../../db/queries';
+import { formatNumber } from '../../lib/utils';
 
 type AccessoryWithVehicleName = {
   id: number;
@@ -53,7 +54,7 @@ export default function AccessoriesScreen() {
                 subtitle={`${item.vehicle_name} ${item.shop ? `• Purchased at ${item.shop}` : ''}`}
                 right={() => (
                   <Text style={[styles.priceText, { color: theme.colors.primary }]}>
-                    €{item.price.toFixed(2)}
+                    €{formatNumber(item.price)}
                   </Text>
                 )}
               />

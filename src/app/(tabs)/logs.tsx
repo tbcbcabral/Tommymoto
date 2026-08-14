@@ -1,39 +1,69 @@
-import { useCallback, useState, useMemo } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Card, useTheme, SegmentedButtons, Chip } from 'react-native-paper';
-import { useFocusEffect } from 'expo-router';
-import { getAllLogs, LogEntry } from '../../db/queries';
+import { useCallback, useState, useMemo, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Text, Card, useTheme, SegmentedButtons, Chip, Button, FAB } from 'react-native-paper';
+import { useFocusEffect, router } from 'expo-router';
+import { deleteLog } from '../../db/queries';
+import { formatNumber } from '../../lib/utils';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useVehicles, useAllLogs } from '../../hooks/useData';
 
 export default function LogsScreen() {
   const theme = useTheme();
-  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filterType, setFilterType] = useState('all');
   const [filterVehicle, setFilterVehicle] = useState('all');
   const [filterBrand, setFilterBrand] = useState('all');
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+  const [fabOpen, setFabOpen] = useState(false);
 
-  const loadLogs = async () => {
-    const data = await getAllLogs();
-    setLogs(data);
+  const vehicles = useVehicles();
+  const logs = useAllLogs();
+
+  const handleDelete = (id: string) => {
+    Alert.alert('Delete Log', 'Are you sure you want to delete this log?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          await deleteLog(id);
+          loadLogs();
+          setExpandedLogId(null);
+        } catch (e: any) {
+          Alert.alert('Error', e.message || 'Failed to delete log.');
+        }
+      }}
+    ]);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      loadLogs();
-    }, [])
-  );
+  const handleEdit = (log: LogEntry) => {
+    if (log.type === 'refuel') {
+      router.push({ pathname: '/add-refuel', params: { logId: log.id } });
+    } else if (log.type === 'maintenance') {
+      router.push({ pathname: '/add-maintenance', params: { logId: log.id } });
+    } else if (log.type === 'accessory') {
+      router.push({ pathname: '/add-accessory', params: { logId: log.id } });
+    }
+  };
 
   // Extract unique vehicles and brands for the filter chips
-  const vehicles = useMemo(() => {
-    const unique = Array.from(new Set(logs.map(l => l.vehicle_name)));
+  const uniqueVehicleNames = useMemo(() => {
+    let relevantLogs = logs;
+    if (filterType !== 'all') {
+      relevantLogs = relevantLogs.filter(l => l.type === filterType);
+    }
+    const unique = Array.from(new Set(relevantLogs.map(l => l.vehicle_name)));
     return ['all', ...unique];
-  }, [logs]);
+  }, [logs, filterType]);
 
   const brands = useMemo(() => {
-    const unique = Array.from(new Set(logs.map(l => l.brand).filter((b): b is string => !!b && b.trim() !== '')));
+    let relevantLogs = logs;
+    if (filterType !== 'all') {
+      relevantLogs = relevantLogs.filter(l => l.type === filterType);
+    }
+    if (filterVehicle !== 'all') {
+      relevantLogs = relevantLogs.filter(l => l.vehicle_name === filterVehicle);
+    }
+    const unique = Array.from(new Set(relevantLogs.map(l => l.brand).filter((b): b is string => !!b && b.trim() !== '')));
     return ['all', ...unique];
-  }, [logs]);
+  }, [logs, filterType, filterVehicle]);
 
   const filteredLogs = logs.filter(log => {
     const matchType = filterType === 'all' || log.type === filterType;
@@ -41,6 +71,12 @@ export default function LogsScreen() {
     const matchBrand = filterBrand === 'all' || log.brand === filterBrand;
     return matchType && matchVehicle && matchBrand;
   });
+
+  useEffect(() => {
+    if (filterBrand !== 'all' && !brands.includes(filterBrand)) {
+      setFilterBrand('all');
+    }
+  }, [brands, filterBrand]);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -76,12 +112,13 @@ export default function LogsScreen() {
         />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-          {vehicles.length > 1 && vehicles.map(v => (
+          {uniqueVehicleNames.length > 1 && uniqueVehicleNames.map(v => (
             <Chip 
               key={`veh-${v}`} 
               selected={filterVehicle === v} 
               onPress={() => setFilterVehicle(v)}
-              style={styles.chip}
+              style={[styles.chip, filterVehicle === v && { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary, borderWidth: 1 }]}
+              textStyle={filterVehicle === v ? { color: theme.colors.onPrimaryContainer, fontWeight: 'bold' } : undefined}
               compact
             >
               {v === 'all' ? 'All Vehicles' : v}
@@ -95,7 +132,8 @@ export default function LogsScreen() {
               key={`brd-${b}`} 
               selected={filterBrand === b} 
               onPress={() => setFilterBrand(b)}
-              style={styles.chip}
+              style={[styles.chip, filterBrand === b && { backgroundColor: theme.colors.primaryContainer, borderColor: theme.colors.primary, borderWidth: 1 }]}
+              textStyle={filterBrand === b ? { color: theme.colors.onPrimaryContainer, fontWeight: 'bold' } : undefined}
               compact
             >
               {b === 'all' ? 'All Brands' : b}
@@ -124,34 +162,81 @@ export default function LogsScreen() {
                 )}
                 right={(props) => (
                   <Text style={[styles.priceText, { paddingRight: 16 }]}>
-                    {log.price >= 0 ? `€${log.price.toFixed(2)}` : ''}
+                    {log.price >= 0 ? `€${formatNumber(log.price)}` : ''}
                   </Text>
                 )}
               />
               <Card.Content>
                 <View style={styles.detailsRow}>
                   {!!log.brand && <Text variant="bodySmall" style={styles.detailText}>🏷️ {log.brand}</Text>}
-                  {log.odometer !== undefined && <Text variant="bodySmall" style={styles.detailText}>🛣️ {log.odometer.toLocaleString()} km</Text>}
+                  {log.odometer !== undefined && <Text variant="bodySmall" style={styles.detailText}>🛣️ {formatNumber(log.odometer)} km</Text>}
                   {log.liters !== undefined && <Text variant="bodySmall" style={styles.detailText}>⛽ {log.liters} L</Text>}
+                  {log.consumption !== undefined && <Text variant="bodySmall" style={[styles.detailText, {color: theme.colors.primary, fontWeight: 'bold'}]}>📈 {log.consumption.toFixed(2)} L/100km</Text>}
                   {log.is_full_tank !== undefined && <Text variant="bodySmall" style={styles.detailText}>{log.is_full_tank ? '✅ Full Tank' : '❌ Part Tank'}</Text>}
                 </View>
 
-                {expandedLogId === log.id && log.service_items && log.service_items.length > 0 && (
-                  <View style={styles.expandedItemsContainer}>
-                    <Text variant="titleSmall" style={{ marginTop: 12, marginBottom: 8, opacity: 0.8 }}>Service Items:</Text>
-                    {log.service_items.map((item, idx) => (
-                      <View key={idx} style={styles.serviceItemRow}>
-                        <Text variant="bodyMedium">• {item.service_type}</Text>
-                        <Text variant="bodyMedium" style={{ opacity: 0.7 }}>€{(item.price || 0).toFixed(2)}</Text>
+                {expandedLogId === log.id && (
+                  <>
+                    {log.service_items && log.service_items.length > 0 && (
+                      <View style={styles.expandedItemsContainer}>
+                        <Text variant="titleSmall" style={{ marginTop: 12, marginBottom: 8, opacity: 0.8 }}>Service Items:</Text>
+                        {log.service_items.map((item, idx) => (
+                          <View key={idx} style={styles.serviceItemRow}>
+                            <View style={{ flex: 1 }}>
+                              <Text variant="bodyMedium">• {item.service_type}</Text>
+                              {!!item.note && <Text variant="bodySmall" style={{ opacity: 0.6, marginLeft: 12, marginTop: -2 }}>{item.note}</Text>}
+                            </View>
+                            <Text variant="bodyMedium" style={{ opacity: 0.7 }}>€{formatNumber(item.price || 0)}</Text>
+                          </View>
+                        ))}
                       </View>
-                    ))}
-                  </View>
+                    )}
+                    <View style={styles.actionButtonsRow}>
+                      <Button mode="outlined" icon="pencil" onPress={() => handleEdit(log)} style={{ flex: 1, marginRight: 8 }}>Edit</Button>
+                      <Button mode="contained" icon="delete" buttonColor={theme.colors.error} onPress={() => handleDelete(log.id)} style={{ flex: 1 }}>Delete</Button>
+                    </View>
+                  </>
                 )}
               </Card.Content>
             </Card>
           ))
         )}
+        )}
       </ScrollView>
+
+      <FAB.Group
+        open={fabOpen}
+        visible
+        icon={fabOpen ? 'close' : 'plus'}
+        actions={[
+          {
+            icon: 'gas-station',
+            label: 'Add Refuel',
+            onPress: () => router.push('/add-refuel'),
+          },
+          {
+            icon: 'wrench',
+            label: 'Add Maintenance',
+            onPress: () => router.push('/add-maintenance'),
+          },
+          {
+            icon: 'shopping',
+            label: 'Add Accessory',
+            onPress: () => router.push('/add-accessory'),
+          },
+          {
+            icon: 'cash',
+            label: 'Add Expense',
+            onPress: () => router.push('/add-expense'),
+          },
+        ]}
+        onStateChange={({ open }) => setFabOpen(open)}
+        onPress={() => {
+          if (fabOpen) {
+            // do something if the speed dial is open
+          }
+        }}
+      />
     </View>
   );
 }
@@ -211,5 +296,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 2,
     paddingLeft: 8,
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#ffffff30',
   }
 });

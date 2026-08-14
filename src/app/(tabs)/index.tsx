@@ -1,39 +1,24 @@
 import { View, StyleSheet, ScrollView, Alert, Share } from 'react-native';
 import { Text, Card, Title, Paragraph, FAB, useTheme, Button, Chip } from 'react-native-paper';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { supabase } from '@/lib/supabase';
-import { getVehicles, getAllLogs, Vehicle, LogEntry } from '@/db/queries';
+import { useVehicles, useAllLogs, useReminders } from '@/hooks/useData';
 
 export default function DashboardScreen() {
   const theme = useTheme();
   const [fabOpen, setFabOpen] = useState(false);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  
+  const vehicles = useVehicles();
+  const logs = useAllLogs();
+  const allReminders = useReminders();
 
-  const loadData = async () => {
-    try {
-      const vehiclesData = await getVehicles();
-      setVehicles(vehiclesData);
-      
-      const logsData = await getAllLogs();
-      setLogs(logsData);
-
-      if (vehiclesData.length > 0 && selectedVehicleId === null) {
-        const def = vehiclesData.find(v => v.is_default);
-        setSelectedVehicleId((def || vehiclesData[0]).id);
-      }
-    } catch (e) {
-      console.error("Error loading dashboard data:", e);
+  useEffect(() => {
+    if (vehicles.length > 0 && selectedVehicleId === null) {
+      const def = vehicles.find(v => v.is_default);
+      setSelectedVehicleId((def || vehicles[0]).id);
     }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      loadData();
-    }, [selectedVehicleId])
-  );
+  }, [vehicles, selectedVehicleId]);
 
   const selectedVehicleName = useMemo(() => {
     const v = vehicles.find(v => v.id === selectedVehicleId);
@@ -46,70 +31,109 @@ export default function DashboardScreen() {
     return logs.filter(l => l.vehicle_id === selectedVehicleId);
   }, [logs, selectedVehicleId]);
 
-  // Statistics calculation for the last 365 days (Last Year)
+  // Analytics Statistics
   const stats = useMemo(() => {
-    const lastYearDate = new Date();
-    lastYearDate.setFullYear(lastYearDate.getFullYear() - 1);
+    let totalExpenses = 0;
+    let maxOdo = 0;
+    let minOdo = Infinity;
     
-    const refuels = vehicleLogs.filter(l => l.type === 'refuel');
-    const services = vehicleLogs.filter(l => l.type === 'maintenance');
-    
-    // 1. Fuel Spent (Last Year)
-    const fuelSpentLastYear = refuels
-      .filter(l => new Date(l.date) >= lastYearDate)
-      .reduce((sum, l) => sum + l.price, 0);
-
-    // 2. Services Spent (Last Year)
-    const servicesLastYear = services
-      .filter(l => new Date(l.date) >= lastYearDate)
-      .reduce((sum, l) => sum + l.price, 0);
-
-    // 3. Avg L/100km (Overall/Historical for accuracy of distance)
-    let avgFuelConsumption = 0;
-    if (refuels.length >= 2) {
-      const sortedRefuels = [...refuels].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      
-      // Calculate total distance between first and last refuel
-      const odometerFirst = sortedRefuels[0].odometer || 0;
-      const odometerLast = sortedRefuels[sortedRefuels.length - 1].odometer || 0;
-      const distance = odometerLast - odometerFirst;
-      
-      if (distance > 0) {
-        // Total liters filled excluding the first refuel (which establishes the initial odometer baseline)
-        const totalLiters = sortedRefuels.slice(1).reduce((sum, r) => sum + (r.liters || 0), 0);
-        avgFuelConsumption = (totalLiters / distance) * 100;
+    // Accumulate expenses and find min/max odometer
+    vehicleLogs.forEach(log => {
+      totalExpenses += (log.price || 0);
+      if (log.odometer !== undefined && log.odometer !== null && log.odometer > 0) {
+        if (log.odometer > maxOdo) maxOdo = log.odometer;
+        if (log.odometer < minOdo) minOdo = log.odometer;
       }
-    }
+    });
+
+    const totalDistance = minOdo !== Infinity && maxOdo > minOdo ? maxOdo - minOdo : 0;
+    const costPerKm = totalDistance > 0 ? totalExpenses / totalDistance : 0;
+
+    // Calculate Average Consumption from all logs
+    const refuelsWithConsumption = vehicleLogs.filter(l => l.type === 'refuel' && l.consumption && l.consumption > 0 && l.consumption < 50);
+    const avgFuelConsumption = refuelsWithConsumption.length > 0 
+      ? refuelsWithConsumption.reduce((sum, l) => sum + (l.consumption || 0), 0) / refuelsWithConsumption.length 
+      : 0;
 
     return {
-      fuelSpent: fuelSpentLastYear,
-      services: servicesLastYear,
+      totalDistance,
+      totalExpenses,
+      costPerKm,
       avgL100km: avgFuelConsumption
     };
   }, [vehicleLogs]);
 
+  // Evaluate reminders for the selected vehicle
+  const evaluatedReminders = useMemo(() => {
+    if (selectedVehicleId === null) return [];
+    
+    const vReminders = allReminders.filter(r => r.vehicle_id === selectedVehicleId);
+    if (vReminders.length === 0) return [];
+
+    // Find current odometer
+    const maxOdo = vehicleLogs.reduce((max, log) => Math.max(max, log.odometer || 0), 0);
+
+    return vReminders.map(r => {
+      if (r.interval_months) {
+        return { ...r, status: 'ok', message: `Every ${r.interval_months} months` };
+      }
+      
+      // Odometer based
+      const maintenanceLogs = vehicleLogs.filter(l => l.type === 'maintenance');
+      let lastServiceOdo = -1;
+      
+      for (const log of maintenanceLogs) {
+        if (log.service_items?.some(i => i.service_type.toLowerCase().trim() === r.service_type.toLowerCase().trim())) {
+          if ((log.odometer || 0) > lastServiceOdo) {
+            lastServiceOdo = log.odometer || 0;
+          }
+        }
+      }
+
+      if (lastServiceOdo === -1) {
+        return { ...r, status: 'warning', message: `Never performed` };
+      }
+
+      const targetOdo = lastServiceOdo + (r.interval_kms || 0);
+      const warningOdo = targetOdo - (r.notify_before_kms || 0);
+
+      if (maxOdo >= targetOdo) {
+        return { ...r, status: 'overdue', message: `OVERDUE by ${maxOdo - targetOdo} km! (Target: ${targetOdo})` };
+      } else if (maxOdo >= warningOdo) {
+        return { ...r, status: 'warning', message: `Due in ${targetOdo - maxOdo} km (Target: ${targetOdo})` };
+      }
+
+      return { ...r, status: 'ok', message: `${targetOdo - maxOdo} km remaining` };
+    });
+  }, [allReminders, vehicleLogs, selectedVehicleId]);
+
   const handleBackup = async () => {
     try {
-      const { data: vehiclesData } = await supabase.from('vehicles').select('*');
-      const { data: refuels } = await supabase.from('refueling_events').select('*');
-      const { data: maintenance } = await supabase.from('maintenance_events').select('*');
-      const { data: acc } = await supabase.from('accessories').select('*');
+      const FileSystem = require('expo-file-system/legacy');
+      const Sharing = require('expo-sharing');
       
-      const backupData = JSON.stringify({
-        export_date: new Date().toISOString(),
-        vehicles: vehiclesData,
-        refueling_events: refuels,
-        maintenance_events: maintenance,
-        accessories: acc
-      }, null, 2);
-
-      await Share.share({
-        message: backupData,
-        title: 'Mototommy Backup Data'
+      const dbPath = FileSystem.documentDirectory + 'SQLite/mototommy.sqlite';
+      
+      const fileInfo = await FileSystem.getInfoAsync(dbPath);
+      
+      if (!fileInfo.exists) {
+        Alert.alert("Backup Failed", "Local database file not found.");
+        return;
+      }
+      
+      if (!(await Sharing.isAvailableAsync())) {
+        Alert.alert("Backup Failed", "Sharing is not available on this device.");
+        return;
+      }
+      
+      await Sharing.shareAsync(dbPath, {
+        dialogTitle: 'Export Mototommy Database',
+        mimeType: 'application/x-sqlite3',
       });
+      
     } catch (e) {
       console.error(e);
-      Alert.alert("Backup Failed", "Could not fetch data from Supabase.");
+      Alert.alert("Backup Failed", "An error occurred while exporting the database.");
     }
   };
 
@@ -133,29 +157,39 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <Title style={styles.header}>Summary for {selectedVehicleName} (Last Year)</Title>
+        <Title style={styles.header}>Analytics: {selectedVehicleName}</Title>
         
         <View style={styles.statsContainer}>
           <Card style={styles.statCard}>
-            <Card.Content>
+            <Card.Content style={{ alignItems: 'center' }}>
+              <Text variant="labelMedium">Total Distance</Text>
+              <Text variant="titleLarge" style={{ marginTop: 4 }}>{stats.totalDistance > 0 ? formatNumber(stats.totalDistance) : 0} km</Text>
+            </Card.Content>
+          </Card>
+          
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: 'center' }}>
+              <Text variant="labelMedium">Total Expenses</Text>
+              <Text variant="titleLarge" style={{ marginTop: 4 }}>€{formatNumber(Math.round(stats.totalExpenses))}</Text>
+            </Card.Content>
+          </Card>
+        </View>
+        <View style={[styles.statsContainer, { marginTop: 12 }]}>
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: 'center' }}>
               <Text variant="labelMedium">Avg L/100km</Text>
-              <Text variant="headlineMedium">
-                {stats.avgL100km > 0 ? `${stats.avgL100km.toFixed(1)}` : 'N/A'}
+              <Text variant="titleLarge" style={{ marginTop: 4, color: theme.colors.primary }}>
+                {stats.avgL100km > 0 ? stats.avgL100km.toFixed(2) : 'N/A'}
               </Text>
             </Card.Content>
           </Card>
           
           <Card style={styles.statCard}>
-            <Card.Content>
-              <Text variant="labelMedium">Fuel Spent</Text>
-              <Text variant="headlineMedium">€{stats.fuelSpent.toFixed(0)}</Text>
-            </Card.Content>
-          </Card>
-          
-          <Card style={styles.statCard}>
-            <Card.Content>
-              <Text variant="labelMedium">Services</Text>
-              <Text variant="headlineMedium">€{stats.services.toFixed(0)}</Text>
+            <Card.Content style={{ alignItems: 'center' }}>
+              <Text variant="labelMedium">Cost / km</Text>
+              <Text variant="titleLarge" style={{ marginTop: 4, color: theme.colors.error }}>
+                {stats.costPerKm > 0 ? `€${stats.costPerKm.toFixed(2)}` : 'N/A'}
+              </Text>
             </Card.Content>
           </Card>
         </View>
@@ -163,7 +197,23 @@ export default function DashboardScreen() {
         <Title style={[styles.header, { marginTop: 24 }]}>Reminders</Title>
         <Card style={styles.reminderCard}>
           <Card.Content>
-            <Paragraph>No upcoming maintenance.</Paragraph>
+            {evaluatedReminders.length === 0 ? (
+              <Paragraph>No reminders set. Go to the Reminders tab to set some!</Paragraph>
+            ) : (
+              evaluatedReminders.map(r => (
+                <View key={r.id} style={{ marginBottom: 12 }}>
+                  <Text variant="titleMedium" style={{ 
+                    color: r.status === 'overdue' ? theme.colors.error : 
+                           r.status === 'warning' ? '#f59e0b' : theme.colors.onSurface 
+                  }}>
+                    {r.service_type}
+                  </Text>
+                  <Text variant="bodyMedium" style={{ opacity: 0.7 }}>
+                    {r.message}
+                  </Text>
+                </View>
+              ))
+            )}
           </Card.Content>
         </Card>
 
@@ -184,21 +234,31 @@ export default function DashboardScreen() {
         actions={[
           {
             icon: 'gas-station',
-            label: 'Refuel',
+            label: 'Add Refuel',
             onPress: () => router.push('/add-refuel'),
           },
           {
             icon: 'wrench',
-            label: 'Maintenance',
+            label: 'Add Maintenance',
             onPress: () => router.push('/add-maintenance'),
           },
           {
             icon: 'shopping',
-            label: 'Accessory',
+            label: 'Add Accessory',
             onPress: () => router.push('/add-accessory'),
+          },
+          {
+            icon: 'cash',
+            label: 'Add Expense',
+            onPress: () => router.push('/add-expense'),
           },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
+        onPress={() => {
+          if (fabOpen) {
+            // do something if the speed dial is open
+          }
+        }}
       />
     </View>
   );

@@ -71,7 +71,7 @@ export default function GarageScreen() {
                 {!v.is_default && (
                   <Button onPress={() => handleSetDefault(v.id)}>Set as Default</Button>
                 )}
-                <Button mode="outlined" onPress={() => Alert.alert('Coming Soon', 'Edit vehicle functionality coming soon!')}>Edit</Button>
+                <Button mode="outlined" onPress={() => router.push({ pathname: '/add-vehicle', params: { vehicleId: v.id } })}>Edit</Button>
                 <Button mode="outlined" textColor={theme.colors.error} onPress={() => handleDelete(v.id, v.make, v.model)}>Archive</Button>
               </Card.Actions>
             </Card>

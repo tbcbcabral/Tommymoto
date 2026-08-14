@@ -1,0 +1,364 @@
+import fs from 'fs';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = 'https://mubjklmroxoooywwjkel.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_KWpP2f43FRCQsoGN6LFHAQ_Lg5X_21v';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const RAW_DATA = `
+##Refuelling
+"Odometer (km)","Date","Fuel","Price / L","Total cost","Volume","Filled tank completely","Second fuel","Price / L","Total cost","Volume","Filled tank completely" 2,"Third fuel","Price / L","Total cost","Volume","Filled tank completely" 3,"Fuel efficiency","Distance","Gas station","Driver","Reason","Payment method","Notes"
+"105411.0","2026-07-24 19:04:26","Gasoline","1.759","23.47","13.343","Yes","","0","0","0","No","","0","0","0","No","6,773 L/100km","","CEPSA S. João","","","",""
+"105214.0","2026-07-09 16:54:44","Gasoline","1.68","23.67","14.089","Yes","","0","0","0","No","","0","0","0","No","6,907 L/100km","197.0","CEPSA S. João","","","",""
+"105010.0","2026-07-01 09:56:38","Gasoline","1.803","22.16","12.291","Yes","","0","0","0","No","","0","0","0","No","6,716 L/100km","204.0","CEPSA S. João","","","",""
+"104827.0","2026-06-23 16:16:17","Gasoline","1.643","20.03","12.191","Yes","","0","0","0","No","","0","0","0","No","6,888 L/100km","183.0","CEPSA S. João","","","",""
+"104650.0","2026-05-29 15:20:26","Gasoline","1.963","24.03","12.241","Yes","","0","0","0","No","","0","0","0","No","6,995 L/100km","177.0","Posto Abastecimento Cepsa Faria Guimarães","","","",""
+"104475.0","2026-05-19 12:25:03","Gasoline","1.709","22.2","12.99","Yes","","0","0","0","No","","0","0","0","No","6,731 L/100km","175.0","Galp","","","",""
+"104282.0","2026-05-03 09:44:07","Gasoline","2.009","21.9","10.901","Yes","","0","0","0","No","","0","0","0","No","2,978 L/100km","193.0","Galp","","","",""
+"103916.0","2026-04-09 14:53:02","Gasoline","2.014","28.64","14.22","Yes","","0","0","0","No","","0","0","0","No","6,903 L/100km","366.0","Galp","","","",""
+"103710.0","2026-03-20 17:40:01","Gasoline","1.992","31.13","15.628","Yes","","0","0","0","No","","0","0","0","No","6,915 L/100km","206.0","Galp","","","",""
+"103484.0","2026-03-05 15:24:46","Gasoline","1.606","22.04","13.724","Yes","","0","0","0","No","","0","0","0","No","7,148 L/100km","226.0","CEPSA S. João","","","",""
+"103292.0","2026-02-20 11:28:15","Gasoline","1.336","17.17","12.852","Yes","","0","0","0","No","","0","0","0","No","6,91 L/100km","192.0","CEPSA S. João","","","",""
+"103106.0","2026-01-08 11:51:52","Gasoline","1.593","21.01","13.189","Yes","","0","0","0","No","","0","0","0","No","6,942 L/100km","186.0","CEPSA S. João","","","",""
+"102916.0","2025-12-31 18:30:37","Gasoline","1.754","23.91","13.632","Yes","","0","0","0","No","","0","0","0","No","7,213 L/100km","190.0","Galp","","","",""
+"102727.0","2025-12-21 15:20:06","Gasoline","1.759","25.069","14.252","Yes","","0","0","0","No","","0","0","0","No","6,723 L/100km","189.0","Bp Porto","","","",""
+"102515.0","2025-12-15 08:52:01","Gasoline","1.683","25.9","15.389","Yes","","0","0","0","No","","0","0","0","No","6,779 L/100km","212.0","CEPSA S. João","","","",""
+"102288.0","2025-11-28 14:22:57","Gasoline","1.668","24.5","14.688","Yes","","0","0","0","No","","0","0","0","No","6,528 L/100km","227.0","CEPSA S. João","","","",""
+"102063.0","2025-11-12 18:28:40","Gasoline","1.703","24.83","14.58","Yes","","0","0","0","No","","0","0","0","No","6,75 L/100km","225.0","CEPSA S. João","","","",""
+"101847.0","2025-10-29 19:00:25","Gasoline","1.59","24.75","15.566","Yes","","0","0","0","No","","0","0","0","No","6,486 L/100km","216.0","CEPSA S. João","","","",""
+"101607.0","2025-10-17 18:43:10","Gasoline","1.478","20.71","14.012","Yes","","0","0","0","No","","0","0","0","No","7,077 L/100km","240.0","CEPSA S. João","","","",""
+"101409.0","2025-10-09 18:08:15","Gasoline","1.111","12.38","11.143","Yes","","0","0","0","No","","0","0","0","No","6,713 L/100km","198.0","CEPSA S. João","","","","Descontou bastante dinheiro de pontos"
+"101243.0","2025-10-02 17:49:51","Gasoline","1.656","24.91","15.042","Yes","","0","0","0","No","","0","0","0","No","7,197 L/100km","166.0","CEPSA S. João","","","",""
+"101034.0","2025-09-22 13:11:24","Gasoline","1.666","21.54","12.929","Yes","","0","0","0","No","","0","0","0","No","7,346 L/100km","209.0","CEPSA S. João","","","",""
+"100858.0","2025-09-12 17:48:48","Gasoline","1.666","23.32","13.998","Yes","","0","0","0","No","","0","0","0","No","6,795 L/100km","176.0","CEPSA S. João","","","",""
+"100652.0","2025-09-03 19:18:43","Gasoline","1.645","24.27","14.754","Yes","","0","0","0","No","","0","0","0","No","5,813 L/100km","206.0","CEPSA S. João","","","",""
+"100444.0","2025-08-21 14:53:36","Gasoline","1.646","21.45","13.032","No","","0","0","0","No","","0","0","0","No","5,813 L/100km","208.0","CEPSA S. João","","","",""
+"100174.0","2025-08-16 15:10:01","Gasoline","1.774","18.63","10.502","Yes","","0","0","0","No","","0","0","0","No","6,732 L/100km","270.0","Bp Porto","","","",""
+"100018.0","2025-07-31 17:11:54","Gasoline","1.631","22.9","14.04","Yes","","0","0","0","No","","0","0","0","No","5,008 L/100km","156.0","CEPSA S. João","","","",""
+"99793.0","2025-07-21 20:28:56","Gasoline","1.784","27.79","15.577","No","","0","0","0","No","","0","0","0","No","5,008 L/100km","225.0","Repsol","","","",""
+"99579.0","2025-07-10 17:41:34","Gasoline","1.621","20.64","12.733","No","","0","0","0","No","","0","0","0","No","5,008 L/100km","214.0","CEPSA S. João","","","",""
+"99399.0","2025-06-26 18:04:32","Gasoline","1.672","22.4","13.397","No","","0","0","0","No","","0","0","0","No","5,008 L/100km","180.0","CEPSA S. João","","","",""
+"99206.0","2025-06-11 19:44:30","Gasoline","1.535","20.33","13.244","No","","0","0","0","No","","0","0","0","No","5,008 L/100km","193.0","CEPSA S. João","","","",""
+"99017.0","2025-05-30 15:45:46","Gasoline","1.699","26.88","15.821","No","","0","0","0","No","","0","0","0","No","5,008 L/100km","189.0","Bp Porto","","","",""
+"98785.0","2025-05-21 13:09:04","Gasoline","1.641","20.07","12.23","No","","0","0","0","No","","0","0","0","No","5,008 L/100km","232.0","CEPSA S. João","","","",""
+"98398.0","2025-05-03 11:56:06","Gasoline","1.659","24.02","14.479","No","","0","0","0","No","","0","0","0","No","5,008 L/100km","387.0","Bp Porto","","","",""
+"97791.0","2025-04-27 21:23:29","Gasoline","1.277","9.9","7.753","Yes","","0","0","0","No","","0","0","0","No","6,984 L/100km","607.0","Repsol","","","",""
+"97680.0","2025-04-27 20:03:04","Gasoline","1.545","18.992","12.293","Yes","","0","0","0","No","","0","0","0","No","0 L/100km","111.0","Repsol","","","",""
+"97470.0","2025-04-27 00:47:35","Gasoline","1.478","11.82","7.997","No","","0","0","0","No","","0","0","0","No","0 L/100km","210.0","Repsol","","","",""
+"39778.0","2018-10-30 17:57:27","Gasoline","1.624","19.326","11.9","Yes","","0","0","0","No","","0","0","0","No","0 L/100km","","Repsol","","","",""
+"37336.0","2018-07-11 17:39:24","Gasoline","1.639","16.18","9.872","Yes","","0","0","0","No","","0","0","0","No","0 L/100km","2442.0","BP - Porto Combatentes","","","",""
+"35533.0","2018-03-19 18:47:44","Gasoline","1.504","16.544","11","Yes","","0","0","0","No","","0","0","0","No","0 L/100km","1803.0","Casa","","","",""
+"35456.0","2018-03-15 09:59:05","Gasoline","1.504","4.497","2.99","No","","0","0","0","No","","0","0","0","No","0 L/100km","77.0","Bp Porto","","","",""
+"34988.0","2018-01-30 17:06:16","Gasoline","1.589","6.4","4.028","No","","0","0","0","No","","0","0","0","No","0 L/100km","468.0","","","","",""
+"34400.0","2018-01-15 18:50:31","Gasoline","1.529","16.819","11","Yes","","0","0","0","No","","0","0","0","No","3,216 L/100km","588.0","Bp Porto","","","",""
+"34058.0","2017-12-23 13:55:44","Gasoline","1.529","6.16","4.029","Yes","","0","0","0","No","","0","0","0","No","2,837 L/100km","342.0","Regua","","","",""
+"33916.0","2017-12-22 18:08:32","Gasoline","1.529","7.28","4.761","Yes","","0","0","0","No","","0","0","0","No","3,217 L/100km","142.0","Bp Porto","","","",""
+"33768.0","2017-12-12 12:23:01","Gasoline","1.529","16.712","10.93","Yes","","0","0","0","No","","0","0","0","No","3,253 L/100km","148.0","Bp Porto","","","",""
+"33432.0","2017-11-28 19:09:48","Gasoline","1.529","17.37","11.36","Yes","","0","0","0","No","","0","0","0","No","0 L/100km","336.0","BP - Porto Combatentes","","","",""
+
+##Service
+"Odometer (km)","Date","Total cost","Type of service","Local service","Driver","Payment method","Notes"
+"102841.0","2025-12-27 19:20:53","184.33","Kit de transmissão","Moto Luar","","","Sem o pinhão de ataque (ainda estava bom  superpinion)"
+"99950.0","2025-07-27 19:27:49","30","Brake Pad","Moto Luar","","","Pastilhas de trás"
+"99950.0","2025-07-27 19:27:49","0","Chain Lubrication","Moto Luar","","","Pastilhas de trás"
+"99950.0","2025-07-27 19:27:49","0","Chain Tension","Moto Luar","","","Pastilhas de trás"
+"99950.0","2025-07-27 19:27:49","105","Oil Change","Moto Luar","","","Pastilhas de trás"
+"99950.0","2025-07-27 19:27:49","0","Oil Filter","Moto Luar","","","Pastilhas de trás"
+"99950.0","2025-07-27 19:27:49","0","Tire pressure","Moto Luar","","","Pastilhas de trás"
+"96400.0","2025-04-02 16:52:10","232.74","New Tires","Brás E Filhos","","","Dunlop trailmax"
+"94562.0","2024-12-11 15:48:10","60.4","Brake Pad","Moto Luar","","","Pastilhas da frente e de tras"
+"94562.0","2024-12-11 15:48:10","22.69","General","Moto Luar","","","Pastilhas da frente e de tras"
+"94562.0","2024-12-11 15:48:10","32.92","Labor Cost","Moto Luar","","","Pastilhas da frente e de tras"
+"91593.0","2024-06-14 15:46:39","11.79","Câmara de ar","Moto Luar","","",""
+"91593.0","2024-06-14 15:46:39","23.95","General","Moto Luar","","",""
+"91593.0","2024-06-14 15:46:39","36.58","Labor Cost","Moto Luar","","",""
+"91593.0","2024-06-14 15:46:39","38.4","Oil Change","Moto Luar","","",""
+"91593.0","2024-06-14 15:46:39","8.92","Oil Filter","Moto Luar","","",""
+"85578.0","2024-02-17 15:42:14","21.57","Air Filter","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","53.9","Battery","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","27.9","Brake Pad","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","41.17","General","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","189","Kit de transmissão","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","80.48","Labor Cost","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","38.4","Oil Change","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","8.92","Oil Filter","Moto Luar","","","General são tretas"
+"85578.0","2024-02-17 15:42:14","21.12","Spark Plugs","Moto Luar","","","General são tretas"
+"83000.0","2023-06-29 15:41:33","21.43","Brake Pad","Rodrigues e Rodrigues","","",""
+"80000.0","2023-04-07 15:41:07","0","CDI","Casa","","",""
+"76550.0","2022-10-20 15:39:50","163.28","New Tires","Brás E Filhos","","",""
+"73000.0","2022-08-27 15:39:19","31.93","Câmara de ar","Motoboxe","","",""
+"70956.0","2022-04-20 15:38:24","10","Air Filter","","","",""
+"70956.0","2022-04-20 15:38:24","35","Oil Change","","","",""
+"70956.0","2022-04-20 15:38:24","10","Oil Filter","","","",""
+"67000.0","2021-11-08 15:35:37","185.63","Brake Pad","Motoboxe","","","Também mudaram os rolamentos da roda de trás (é barato)"
+"64000.0","2021-09-04 15:33:09","55","Battery","Motorense","","","Refez a cablagem do retificador"
+"64000.0","2021-09-04 15:33:09","60","Rectifier","Motorense","","","Refez a cablagem do retificador"
+"63000.0","2021-08-19 15:32:34","36","CDI","Casa","","",""
+"62452.0","2021-06-23 15:30:41","120.59","New Tires","Brás E Filhos","","",""
+"62000.0","2021-02-27 15:29:41","0","General","Casa","","","Mudanca piscas para os mais curtos"
+"58855.0","2020-12-15 15:28:33","43.05","General","Motoboxe","","",""
+"58855.0","2020-12-15 15:28:33","38.7","Oil Change","Motoboxe","","",""
+"58855.0","2020-12-15 15:28:33","11.64","Oil Filter","Motoboxe","","",""
+"58232.0","2020-11-19 15:27:55","29.64","Câmara de ar","Motoboxe","","",""
+"57613.0","2020-10-20 15:27:16","52.56","Brake Pad","Motoboxe","","",""
+"54338.0","2020-07-06 15:23:57","30.14","Clutch System","Motoboxe","","",""
+"54338.0","2020-07-06 15:23:57","12.18","Câmara de ar","Motoboxe","","",""
+"54338.0","2020-07-06 15:23:57","130.73","Kit de transmissão","Motoboxe","","",""
+"54338.0","2020-07-06 15:23:57","56.5","Labor Cost","Motoboxe","","",""
+"54338.0","2020-07-06 15:23:57","137.23","New Tires","Motoboxe","","",""
+"50094.0","2019-12-09 15:22:17","33.96","Air Filter","Motoboxe","","","Cabo velocímetro"
+"50094.0","2019-12-09 15:22:17","47.8","Brake Pad","Motoboxe","","","Cabo velocímetro"
+"50094.0","2019-12-09 15:22:17","33.69","General","Motoboxe","","","Cabo velocímetro"
+"50094.0","2019-12-09 15:22:17","36.9","Labor Cost","Motoboxe","","","Cabo velocímetro"
+"49500.0","2019-11-13 15:21:14","0","Chain Lubrication","Casa","","",""
+"49500.0","2019-11-13 15:21:14","0","Chain Tension","Casa","","",""
+"45489.0","2019-06-28 15:19:42","36.9","Labor Cost","Motoboxe","","",""
+"45489.0","2019-06-28 15:19:42","75.65","Rectifier","Motoboxe","","",""
+"44195.0","2019-06-06 15:16:50","47.8","Brake Pad","","","",""
+"44195.0","2019-06-06 15:16:50","20.91","Cooling System","","","",""
+"44195.0","2019-06-06 15:16:50","62","General","","","",""
+"44195.0","2019-06-06 15:16:50","55.35","Labor Cost","","","",""
+"44195.0","2019-06-06 15:16:50","9.45","Lights","","","",""
+"44195.0","2019-06-06 15:16:50","38.7","Oil Change","","","",""
+"44195.0","2019-06-06 15:16:50","11.38","Oil Filter","","","",""
+"43800.0","2019-05-21 15:16:02","47.97","Battery","Motoboxe","","","Colocação em casa"
+"43500.0","2019-05-17 15:12:45","5.3","General","Motoboxe","","","Parafuso pivot manete tração substituição em casa"
+"42609.0","2019-02-26 20:58:12","12","Oil Change","Casa","","",""
+"40100.0","2018-11-24 12:58:11","35","Canhão do suporte da embraiagem","Moto Luar","","","Moto limpa impecável"
+"40100.0","2018-11-24 12:58:11","60","Labor Cost","Moto Luar","","","Moto limpa impecável"
+"40100.0","2018-11-24 12:58:11","70","Rolamentos da direção","Moto Luar","","","Moto limpa impecável"
+"37570.0","2018-08-21 17:49:47","30","Oil Change","Moto Luar","","",""
+"32800.0","2017-10-20 14:12:22","50","Afinação motor","Moto Luar","","",""
+"32800.0","2017-10-20 14:12:22","20","Oil Change","Moto Luar","","",""
+"29600.0","2017-04-21 14:14:27","105","New Tires","Moto Luar","","","Só traseiro"
+"24500.0","2016-09-14 14:15:33","40","Battery","Moto Luar","","",""
+"24300.0","2016-09-07 14:16:18","100","New Tires","Moto Luar","","","Pneu da frente"
+"23100.0","2016-07-29 14:18:04","25","Throttle","Moto Luar","","",""
+`;
+
+function parseCSVLine(line) {
+  const values = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') {
+      inQuotes = !inQuotes;
+    } else if (line[i] === ',' && !inQuotes) {
+      values.push(current);
+      current = '';
+    } else {
+      current += line[i];
+    }
+  }
+  values.push(current);
+  return values;
+}
+
+function homogenizeBrand(brand) {
+  if (!brand) return '';
+  const b = brand.toLowerCase();
+  if (b.includes('cepsa')) return 'CEPSA';
+  if (b.includes('bp')) return 'BP';
+  if (b.includes('galp')) return 'Galp';
+  if (b.includes('repsol')) return 'Repsol';
+  return brand.charAt(0).toUpperCase() + brand.slice(1).trim();
+}
+
+function translateService(service) {
+  if (!service) return '';
+  const translations = {
+    'Câmara de ar': 'Inner Tube',
+    'Kit de transmissão': 'Transmission Kit',
+    'Rolamentos da direção': 'Steering Bearings',
+    'Canhão do suporte da embraiagem': 'Clutch Support Barrel',
+    'Afinação motor': 'Engine Tuning',
+    'General': 'General Maintenance',
+    'New Tires': 'New Tires',
+    'Brake Pad': 'Brake Pads',
+    'Oil Change': 'Oil Change',
+    'Oil Filter': 'Oil Filter',
+    'Battery': 'Battery',
+    'Spark Plugs': 'Spark Plugs',
+    'Labor Cost': 'Labor Cost',
+    'Chain Lubrication': 'Chain Lubrication',
+    'Chain Tension': 'Chain Tension',
+    'Tire pressure': 'Tire Pressure',
+    'Air Filter': 'Air Filter',
+    'Cooling System': 'Cooling System',
+    'Lights': 'Lights',
+    'Rectifier': 'Rectifier',
+    'CDI': 'CDI',
+    'Clutch System': 'Clutch System',
+    'Throttle': 'Throttle'
+  };
+  return translations[service] || service;
+}
+
+async function run() {
+  console.log("Logging in...");
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email: 'tbcbcabral@hotmail.com',
+    password: 'zR1^e@#t5x9HjD',
+  });
+
+  if (authError) {
+    console.error("Login failed:", authError.message);
+    return;
+  }
+  
+  const userId = authData.user.id;
+  console.log("Logged in. User ID:", userId);
+
+  // 1. Insert Vehicles
+  console.log("Inserting vehicles...");
+  
+  // Custom unique UUID generator since we don't have uuid lib easily
+  const generateUUID = () => crypto.randomUUID();
+
+  const transalpId = generateUUID();
+  const xr125Id = generateUUID();
+
+  const vehicles = [
+    {
+      id: transalpId,
+      user_id: userId,
+      make: 'Honda',
+      model: 'XL600V',
+      year: 1992,
+      alias: 'Transalp'
+    },
+    {
+      id: xr125Id,
+      user_id: userId,
+      make: 'Honda',
+      model: 'XR125',
+      year: 2004,
+      alias: 'XR125'
+    }
+  ];
+
+  const { error: vError } = await supabase.from('vehicles').insert(vehicles);
+  if (vError) {
+    console.error("Vehicle insert error:", vError);
+    return;
+  }
+  console.log("Vehicles created.");
+
+  // Parse CSV Data
+  const lines = RAW_DATA.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  let currentSection = null;
+  const refuels = [];
+  const services = [];
+
+  for (const line of lines) {
+    if (line.startsWith('##Refuelling')) {
+      currentSection = 'refuel';
+      continue;
+    } else if (line.startsWith('##Service')) {
+      currentSection = 'service';
+      continue;
+    }
+    
+    // Skip header lines
+    if (line.startsWith('"Odometer')) continue;
+
+    const values = parseCSVLine(line);
+    
+    if (currentSection === 'refuel') {
+      refuels.push({
+        id: generateUUID(),
+        vehicle_id: transalpId,
+        odometer: parseInt(parseFloat(values[0])),
+        date: values[1],
+        fuel_type: values[2],
+        liters: parseFloat(values[5]),
+        petrol_station_brand: homogenizeBrand(values[19]),
+        total_price: parseFloat(values[4]),
+        is_full_tank: values[6] === 'Yes' ? 1 : 0
+      });
+    } else if (currentSection === 'service') {
+      services.push({
+        vehicle_id: transalpId,
+        odometer: parseInt(parseFloat(values[0])),
+        date: values[1],
+        total_cost: parseFloat(values[2]),
+        service_type: translateService(values[3]),
+        garage: values[4],
+        notes: values[7]
+      });
+    }
+  }
+
+  console.log(`Parsed ${refuels.length} refuels and ${services.length} service items.`);
+
+  // Insert Refuels
+  if (refuels.length > 0) {
+    const { error: rError } = await supabase.from('refueling_events').insert(refuels);
+    if (rError) console.error("Refuel insert error:", rError);
+    else console.log("Refuels inserted successfully.");
+  }
+
+  // Group services by odometer and date to create maintenance events
+  const maintenanceEventsMap = new Map();
+  
+  for (const item of services) {
+    const key = `${item.odometer}_${item.date}`;
+    if (!maintenanceEventsMap.has(key)) {
+      maintenanceEventsMap.set(key, {
+        id: generateUUID(),
+        vehicle_id: transalpId,
+        date: item.date,
+        odometer: item.odometer,
+        garage: item.garage,
+        items: []
+      });
+    }
+    maintenanceEventsMap.get(key).items.push(item);
+  }
+
+  const maintenanceEvents = Array.from(maintenanceEventsMap.values());
+  const maintenanceRecords = maintenanceEvents.map(e => ({
+    id: e.id,
+    vehicle_id: e.vehicle_id,
+    date: e.date,
+    odometer: e.odometer,
+    garage: e.garage
+  }));
+
+  if (maintenanceRecords.length > 0) {
+    const { error: mError } = await supabase.from('maintenance_events').insert(maintenanceRecords);
+    if (mError) {
+      console.error("Maintenance insert error:", mError);
+    } else {
+      console.log("Maintenance events inserted successfully.");
+    }
+  }
+
+  // Insert service items
+  const serviceItems = [];
+  for (const event of maintenanceEvents) {
+    for (const item of event.items) {
+      serviceItems.push({
+        id: generateUUID(),
+        maintenance_event_id: event.id,
+        service_type: item.service_type,
+        price: item.total_cost,
+        note: item.notes
+      });
+    }
+  }
+
+  if (serviceItems.length > 0) {
+    // Insert in batches if needed, but 70 items is fine
+    const { error: sError } = await supabase.from('service_items').insert(serviceItems);
+    if (sError) console.error("Service items insert error:", sError);
+    else console.log("Service items inserted successfully.");
+  }
+
+  console.log("Migration Complete!");
+}
+
+run();

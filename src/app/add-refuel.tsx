@@ -1,34 +1,55 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { TextInput, Button, useTheme, Switch, Text, SegmentedButtons } from 'react-native-paper';
-import { router } from 'expo-router';
-import { getVehicles, Vehicle, addRefuelingEvent } from '../db/queries';
+import { TextInput, Button, useTheme, Switch, Text, SegmentedButtons, Chip } from 'react-native-paper';
+import { router, useLocalSearchParams } from 'expo-router';
+import { getVehicles, Vehicle, addRefuelingEvent, getRefuelingEvent, updateRefuelingEvent, getUniqueValues } from '../db/queries';
+import { formatNumber } from '../lib/utils';
 
 export default function AddRefuelScreen() {
   const theme = useTheme();
+  const { logId } = useLocalSearchParams();
+  const isEditing = !!logId;
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [liters, setLiters] = useState('');
-  const [fuelType, setFuelType] = useState('');
+  const [fuelType, setFuelType] = useState('Petrol');
   const [stationBrand, setStationBrand] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
   const [odometer, setOdometer] = useState('');
   const [isFullTank, setIsFullTank] = useState(true);
+  const [brands, setBrands] = useState<string[]>([]);
 
   useEffect(() => {
     const load = async () => {
       const data = await getVehicles();
       setVehicles(data);
-      if (data.length > 0) {
+      
+      if (isEditing) {
+        try {
+          const event = await getRefuelingEvent(logId.toString().replace('refuel-', ''));
+          setSelectedVehicleId(event.vehicle_id);
+          setDate(event.date);
+          setLiters(event.liters.toString());
+          setFuelType(event.fuel_type || '');
+          setStationBrand(event.petrol_station_brand || '');
+          setTotalPrice(event.total_price.toString());
+          setOdometer(event.odometer.toString());
+          setIsFullTank(Boolean(event.is_full_tank));
+        } catch (e) {
+          Alert.alert('Error', 'Failed to load log details.');
+          router.back();
+        }
+      } else if (data.length > 0) {
         const def = data.find(v => v.is_default);
-        setSelectedVehicleId((def || data[0]).id.toString());
+        setSelectedVehicleId((def || data[0]).id);
         setFuelType((def || data[0]).default_fuel_type || '');
       }
+      getUniqueValues('refueling_events', 'petrol_station_brand').then(setBrands);
     };
     load();
-  }, []);
+  }, [logId, isEditing]);
 
   const handleSave = async () => {
     try {
@@ -37,8 +58,8 @@ export default function AddRefuelScreen() {
         return;
       }
       
-      await addRefuelingEvent({
-        vehicle_id: parseInt(selectedVehicleId),
+      const payload = {
+        vehicle_id: selectedVehicleId,
         date,
         liters: parseFloat(liters),
         fuel_type: fuelType,
@@ -46,7 +67,16 @@ export default function AddRefuelScreen() {
         total_price: parseFloat(totalPrice),
         odometer: parseInt(odometer),
         is_full_tank: isFullTank ? 1 : 0
-      });
+      };
+
+      if (isEditing) {
+        await updateRefuelingEvent(logId.toString().replace('refuel-', ''), payload);
+      } else {
+        await addRefuelingEvent(payload);
+      }
+      
+      // Trigger distance-based reminders if they cross the threshold
+      import('../lib/reminder-eval').then(m => m.evaluateAndTriggerDistanceReminders(payload.vehicle_id, payload.odometer));
       
       router.back();
     } catch (e: any) {
@@ -78,21 +108,37 @@ export default function AddRefuelScreen() {
       />
 
       <TextInput label="Date (YYYY-MM-DD) *" value={date} onChangeText={setDate} style={styles.input} />
-      <TextInput label="Liters *" value={liters} onChangeText={setLiters} keyboardType="numeric" style={styles.input} />
-      <TextInput label="Total Price Paid (€) *" value={totalPrice} onChangeText={setTotalPrice} keyboardType="numeric" style={styles.input} />
-      <TextInput label="Odometer (km) *" value={odometer} onChangeText={setOdometer} keyboardType="numeric" style={styles.input} />
+      <TextInput label="Liters *" value={liters} onChangeText={(t) => setLiters(t.replace(/,/g, '.').replace(/[^0-9.]/g, ''))} keyboardType="numbers-and-punctuation" style={styles.input} />
+      <TextInput label="Total price paid (€) *" value={totalPrice} onChangeText={(t) => setTotalPrice(t.replace(/,/g, '.').replace(/[^0-9.]/g, ''))} keyboardType="numbers-and-punctuation" style={styles.input} />
+      <TextInput label="Odometer (km) *" value={odometer} onChangeText={(t) => setOdometer(t.replace(/\D/g, ''))} keyboardType="number-pad" style={styles.input} />
       
-      <TextInput label="Fuel Type" value={fuelType} onChangeText={setFuelType} style={styles.input} />
-      <TextInput label="Petrol Station Brand" value={stationBrand} onChangeText={setStationBrand} style={styles.input} />
+      <Text style={styles.label}>Fuel type</Text>
+      <SegmentedButtons
+        value={fuelType}
+        onValueChange={setFuelType}
+        buttons={[
+          { value: 'Petrol', label: 'Petrol' },
+          { value: 'Diesel', label: 'Diesel' },
+        ]}
+        style={styles.input}
+      />
+      <TextInput label="Petrol station brand" value={stationBrand} onChangeText={setStationBrand} style={styles.input} />
+      {brands.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+          {brands.map((b) => (
+            <Chip key={b} onPress={() => setStationBrand(b)} style={styles.chip} compact>{b}</Chip>
+          ))}
+        </ScrollView>
+      )}
       
       <View style={styles.switchContainer}>
-        <Text>Full Tank?</Text>
+        <Text>Full tank?</Text>
         <Switch value={isFullTank} onValueChange={setIsFullTank} />
       </View>
       <Text style={styles.hint}>Used to calculate average fuel consumption.</Text>
 
       <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
-        Save Refuel Log
+        {isEditing ? 'Save changes' : 'Save refuel log'}
       </Button>
     </ScrollView>
   );
@@ -109,6 +155,13 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 8,
     opacity: 0.7,
+  },
+  chipScroll: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  chip: {
+    marginRight: 8,
   },
   switchContainer: {
     flexDirection: 'row',

@@ -1,35 +1,52 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { TextInput, Button, useTheme, Text, SegmentedButtons } from 'react-native-paper';
-import { router } from 'expo-router';
-import { addAccessory, getVehicles, Vehicle } from '../db/queries';
+import { TextInput, Button, useTheme, Text, SegmentedButtons, Chip } from 'react-native-paper';
+import { router, useLocalSearchParams } from 'expo-router';
+import { addAccessory, getVehicles, Vehicle, getAccessory, updateAccessory, getUniqueValues } from '../db/queries';
 
 export default function AddAccessoryScreen() {
   const theme = useTheme();
+  const { logId } = useLocalSearchParams();
+  const isEditing = !!logId;
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [selectedVehicle, setSelectedVehicle] = useState<string>('');
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
   
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [shop, setShop] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [shops, setShops] = useState<string[]>([]);
 
   useEffect(() => {
-    getVehicles().then(data => {
+    const load = async () => {
+      const data = await getVehicles();
       setVehicles(data);
-      const defaultVehicle = data.find(v => v.is_default);
-      if (defaultVehicle) {
-        setSelectedVehicle(defaultVehicle.id.toString());
+      
+      if (isEditing) {
+        try {
+          const event = await getAccessory(logId.toString().replace('acc-', ''));
+          setSelectedVehicleId(event.vehicle_id);
+          setName(event.name);
+          setPrice(event.price.toString());
+          setShop(event.shop || '');
+          setDate(event.date);
+        } catch (e) {
+          Alert.alert('Error', 'Failed to load log details.');
+          router.back();
+        }
       } else if (data.length > 0) {
-        setSelectedVehicle(data[0].id.toString());
+        const def = data.find(v => v.is_default);
+        setSelectedVehicleId((def || data[0]).id);
       }
-    });
-  }, []);
+      getUniqueValues('accessories', 'shop').then(setShops);
+    };
+    load();
+  }, [logId, isEditing]);
 
   const handleSave = async () => {
     try {
-      if (!selectedVehicle) {
+      if (!selectedVehicleId) {
         Alert.alert('Error', 'Please select a vehicle.');
         return;
       }
@@ -42,14 +59,20 @@ export default function AddAccessoryScreen() {
         return;
       }
 
-      await addAccessory({
-        vehicle_id: parseInt(selectedVehicle),
+      const payload = {
+        vehicle_id: selectedVehicleId,
         name,
         price: parseFloat(price.replace(',', '.')),
         shop,
         date,
         receipt_image_uri: ''
-      });
+      };
+
+      if (isEditing) {
+        await updateAccessory(logId.toString().replace('acc-', ''), payload);
+      } else {
+        await addAccessory(payload);
+      }
       
       router.back();
     } catch (e: any) {
@@ -70,10 +93,10 @@ export default function AddAccessoryScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.form}>
-        <Text style={styles.label}>Select Vehicle</Text>
+        <Text style={styles.label}>Select vehicle</Text>
         <SegmentedButtons
-          value={selectedVehicle}
-          onValueChange={setSelectedVehicle}
+          value={selectedVehicleId}
+          onValueChange={setSelectedVehicleId}
           buttons={vehicles.map(v => ({
             value: v.id.toString(),
             label: v.alias || v.model,
@@ -82,12 +105,19 @@ export default function AddAccessoryScreen() {
         />
 
         <TextInput label="Date (YYYY-MM-DD) *" value={date} onChangeText={setDate} style={styles.input} />
-        <TextInput label="Accessory Name *" value={name} onChangeText={setName} style={styles.input} />
-        <TextInput label="Price Paid (€) *" value={price} onChangeText={setPrice} keyboardType="numeric" style={styles.input} />
-        <TextInput label="Shop Name" value={shop} onChangeText={setShop} style={styles.input} />
+        <TextInput label="Accessory name *" value={name} onChangeText={setName} style={styles.input} />
+        <TextInput label="Price paid (€) *" value={price} onChangeText={(t) => setPrice(t.replace(/,/g, '.').replace(/[^0-9.]/g, ''))} keyboardType="numbers-and-punctuation" style={styles.input} />
+        <TextInput label="Shop name" value={shop} onChangeText={setShop} style={styles.input} />
+        {shops.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+            {shops.map((s) => (
+              <Chip key={s} onPress={() => setShop(s)} style={styles.chip} compact>{s}</Chip>
+            ))}
+          </ScrollView>
+        )}
         
         <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
-          Save Accessory
+          {isEditing ? 'Save changes' : 'Save accessory'}
         </Button>
       </View>
     </ScrollView>
@@ -107,6 +137,13 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 8,
     opacity: 0.7,
+  },
+  chipScroll: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  chip: {
+    marginRight: 8,
   },
   saveBtn: {
     marginTop: 16,
