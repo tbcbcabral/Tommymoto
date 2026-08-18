@@ -1,8 +1,8 @@
-# Mototommy 🏍️
+# Tommymoto 🏍️
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-208AEF?style=for-the-badge&logo=github)](https://tbcbcabral.github.io/Mototommy/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-208AEF?style=for-the-badge&logo=github)](https://tbcbcabral.github.io/Tommymoto/)
 
-Mototommy is a sleek, local-first garage management and vehicle tracking application built with **Expo (React Native)**, **PowerSync**, and **Supabase**. It helps you keep track of all your vehicles, their refueling history, and maintenance logs—all instantly accessible from any device.
+Tommymoto is a sleek, local-first garage management and vehicle tracking application built with **Expo (React Native)**, **PowerSync**, and **Supabase**. It helps you keep track of all your vehicles, their refueling history, and maintenance logs—all instantly accessible from any device.
 
 ## ✨ Features
 
@@ -29,8 +29,8 @@ Mototommy is a sleek, local-first garage management and vehicle tracking applica
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/tbcbcabral/Mototommy.git
-   cd Mototommy
+   git clone https://github.com/tbcbcabral/Tommymoto.git
+   cd Tommymoto
    ```
 2. Install dependencies:
    ```bash
@@ -53,7 +53,7 @@ npx expo start
 - Press `w` to run the app in your Web Browser.
 
 ## 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/tbcbcabral/Mototommy/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/tbcbcabral/Tommymoto/issues).
 
 ## 📝 License
 This project is licensed under the MIT License.

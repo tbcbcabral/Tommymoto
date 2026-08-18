@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mototommy",
+    "scheme": "tommymoto",
     "userInterfaceStyle": "automatic",
     "updates": {
       "url": "https://u.expo.dev/c5e753f9-b66e-4d8c-a73d-cdf13ae91b83"
@@ -57,7 +57,7 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true,
-      "baseUrl": "/Mototommy"
+      "baseUrl": "/Tommymoto"
     },
     "extra": {
       "router": {},
