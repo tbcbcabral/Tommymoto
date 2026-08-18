@@ -1,6 +1,8 @@
 # Mototommy 🏍️
 
-Mototommy is a sleek, local-first garage management and vehicle tracking application built with **Expo (React Native)** and **Supabase**. It helps you keep track of all your vehicles, their refueling history, and maintenance logs—all instantly accessible from any device.
+[![Live Demo](https://img.shields.io/badge/Live-Demo-208AEF?style=for-the-badge&logo=github)](https://tbcbcabral.github.io/Mototommy/)
+
+Mototommy is a sleek, local-first garage management and vehicle tracking application built with **Expo (React Native)**, **PowerSync**, and **Supabase**. It helps you keep track of all your vehicles, their refueling history, and maintenance logs—all instantly accessible from any device.
 
 ## ✨ Features
 
