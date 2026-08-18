@@ -27,7 +27,7 @@ const ExpoSecureStoreAdapter = {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: typeof window !== 'undefined' ? ExpoSecureStoreAdapter : ExpoSSRStorage,
+    storage: Platform.OS === 'web' ? window.localStorage : (typeof window !== 'undefined' ? ExpoSecureStoreAdapter : ExpoSSRStorage),
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,

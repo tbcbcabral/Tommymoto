@@ -6,7 +6,8 @@ import { supabase } from '../supabase';
 export const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
   database: {
-    dbFilename: 'mototommy_v2.sqlite'
+    dbFilename: 'mototommy_v2.sqlite',
+    worker: '/Tommymoto/powersync-worker.js'
   },
   flags: {
     enableMultiTabs: false // Disable multi-tab sync to avoid SharedWorker complexity for now
