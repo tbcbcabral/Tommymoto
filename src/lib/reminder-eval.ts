@@ -1,7 +1,7 @@
 import { getReminders, getAllLogs, updateReminderNotifications } from '../db/queries';
 import { cancelReminderNotifications, scheduleRepeatingBatch } from './notifications';
 
-export async function evaluateAndTriggerDistanceReminders(vehicleId: number, currentOdo: number) {
+export const evaluateAndTriggerDistanceReminders = async (vehicleId: string, currentOdo: number) => {
   const allReminders = await getReminders();
   const vReminders = allReminders.filter(r => r.vehicle_id === vehicleId && r.interval_kms);
   
@@ -44,7 +44,7 @@ export async function evaluateAndTriggerDistanceReminders(vehicleId: number, cur
   }
 }
 
-export async function handleMaintenanceLogged(vehicleId: number, serviceTypes: string[]) {
+export const handleMaintenanceLogged = async (vehicleId: string, serviceTypes: string[]) => {
   const allReminders = await getReminders();
   const vReminders = allReminders.filter(r => r.vehicle_id === vehicleId);
 
@@ -76,7 +76,7 @@ export async function handleMaintenanceLogged(vehicleId: number, serviceTypes: s
   }
 }
 
-export async function initializeReminder(reminderId: number) {
+export async function initializeReminder(reminderId: string) {
   const allReminders = await getReminders();
   const r = allReminders.find(rem => rem.id === reminderId);
   if (!r) return;

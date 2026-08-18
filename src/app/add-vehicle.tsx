@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { TextInput, Button, useTheme, Avatar, Text, SegmentedButtons } from 'react-native-paper';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { addVehicle, getVehicle, updateVehicle } from '../db/queries';
 
 export default function AddVehicleScreen() {
@@ -51,6 +53,19 @@ export default function AddVehicleScreen() {
     }, [isEditing, vId])
   );
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
   const handleSave = async () => {
     try {
       if (!make || !model) {
@@ -87,14 +102,20 @@ export default function AddVehicleScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <KeyboardAwareScrollView 
+      style={{ flex: 1, backgroundColor: theme.colors.background }} 
+      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
+      enableOnAndroid={true} 
+      enableAutomaticScroll={true}
+      extraScrollHeight={100} 
+      keyboardShouldPersistTaps="handled">
       <View style={styles.photoContainer}>
         {photoUri ? (
           <Avatar.Image size={100} source={{ uri: photoUri }} />
         ) : (
           <Avatar.Icon size={100} icon="camera" />
         )}
-        <Button style={{ marginTop: 8 }} onPress={() => Alert.alert('Coming Soon', 'Photo upload coming soon')}>Add Photo</Button>
+        <Button style={{ marginTop: 8 }} onPress={pickImage}>Add Photo</Button>
       </View>
 
       <TextInput label="Make *" value={make} onChangeText={setMake} style={styles.input} />
@@ -117,13 +138,13 @@ export default function AddVehicleScreen() {
       <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
         {isEditing ? 'Save changes' : 'Save vehicle'}
       </Button>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 16,
   },
   photoContainer: {

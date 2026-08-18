@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { TextInput, Button, useTheme, Switch, Text, SegmentedButtons, Chip } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { getVehicles, Vehicle, addRefuelingEvent, getRefuelingEvent, updateRefuelingEvent, getUniqueValues } from '../db/queries';
 import { formatNumber } from '../lib/utils';
 
@@ -19,6 +21,7 @@ export default function AddRefuelScreen() {
   const [totalPrice, setTotalPrice] = useState('');
   const [odometer, setOdometer] = useState('');
   const [isFullTank, setIsFullTank] = useState(true);
+  const [photoUri, setPhotoUri] = useState('');
   const [brands, setBrands] = useState<string[]>([]);
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export default function AddRefuelScreen() {
           setTotalPrice(event.total_price.toString());
           setOdometer(event.odometer.toString());
           setIsFullTank(Boolean(event.is_full_tank));
+          setPhotoUri(event.receipt_image_uri || '');
         } catch (e) {
           Alert.alert('Error', 'Failed to load log details.');
           router.back();
@@ -66,7 +70,8 @@ export default function AddRefuelScreen() {
         petrol_station_brand: stationBrand,
         total_price: parseFloat(totalPrice),
         odometer: parseInt(odometer),
-        is_full_tank: isFullTank ? 1 : 0
+        is_full_tank: isFullTank ? 1 : 0,
+        receipt_image_uri: photoUri,
       };
 
       if (isEditing) {
@@ -85,6 +90,18 @@ export default function AddRefuelScreen() {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
   if (vehicles.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -95,17 +112,26 @@ export default function AddRefuelScreen() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <KeyboardAwareScrollView 
+      style={{ flex: 1, backgroundColor: theme.colors.background }} 
+      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
+      enableOnAndroid={true} 
+      enableAutomaticScroll={true}
+      extraScrollHeight={100} 
+      keyboardShouldPersistTaps="handled">
       <Text style={styles.label}>Select Vehicle</Text>
-      <SegmentedButtons
-        value={selectedVehicleId}
-        onValueChange={setSelectedVehicleId}
-        buttons={vehicles.map(v => ({
-          value: v.id.toString(),
-          label: v.alias || v.model,
-        }))}
-        style={styles.input}
-      />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        {vehicles.map(v => (
+          <Chip 
+            key={v.id} 
+            selected={selectedVehicleId === v.id}
+            onPress={() => setSelectedVehicleId(v.id.toString())}
+            style={styles.chip}
+          >
+            {v.alias || v.model}
+          </Chip>
+        ))}
+      </ScrollView>
 
       <TextInput label="Date (YYYY-MM-DD) *" value={date} onChangeText={setDate} style={styles.input} />
       <TextInput label="Liters *" value={liters} onChangeText={(t) => setLiters(t.replace(/,/g, '.').replace(/[^0-9.]/g, ''))} keyboardType="numbers-and-punctuation" style={styles.input} />
@@ -137,16 +163,20 @@ export default function AddRefuelScreen() {
       </View>
       <Text style={styles.hint}>Used to calculate average fuel consumption.</Text>
 
+      <Button icon="camera" mode="outlined" onPress={pickImage} style={styles.input}>
+        {photoUri ? 'Change Receipt Photo' : 'Upload Receipt Photo'}
+      </Button>
+
       <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
         {isEditing ? 'Save changes' : 'Save refuel log'}
       </Button>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 16,
   },
   input: {

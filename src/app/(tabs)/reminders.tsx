@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, Modal } from 'react-native';
 import { Text, Card, Title, FAB, Button, useTheme, SegmentedButtons, TextInput, Chip, IconButton } from 'react-native-paper';
 import { useFocusEffect } from 'expo-router';
-import { deleteReminder, getUniqueValues, Reminder } from '../../db/queries';
-import { formatNumber } from '../../lib/utils';
+import { deleteReminder, getUniqueValues, Reminder, updateReminder } from '../../db/queries';
+import { formatNumber, normalizeServiceType } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
 import { useVehicles, useReminders } from '../../hooks/useData';
 
@@ -21,13 +21,14 @@ export default function RemindersScreen() {
   const [serviceTypes, setServiceTypes] = useState<string[]>([]);
   
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [reminderMode, setReminderMode] = useState<'odo' | 'time' | 'both'>('odo');
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [serviceType, setServiceType] = useState('');
   const [intervalKms, setIntervalKms] = useState('');
   const [notifyBeforeKms, setNotifyBeforeKms] = useState('500');
   const [intervalMonths, setIntervalMonths] = useState('');
   const [repeatIntervalDays, setRepeatIntervalDays] = useState('7');
-  const [isTimeBased, setIsTimeBased] = useState(false);
 
   useEffect(() => {
     if (vehicles.length > 0 && selectedVehicleId === null) {
@@ -48,47 +49,48 @@ export default function RemindersScreen() {
     }, [])
   );
 
-  const handleAdd = async () => {
+  const handleSave = async () => {
     if (!selectedVehicleId || !serviceType) {
       Alert.alert('Error', 'Please select a vehicle and service type.');
       return;
     }
     
-    const k = parseInt(intervalKms);
-    const m = parseInt(intervalMonths);
+    const k = (reminderMode === 'odo' || reminderMode === 'both') ? parseInt(intervalKms) : NaN;
+    const m = (reminderMode === 'time' || reminderMode === 'both') ? parseInt(intervalMonths) : NaN;
     
-    if (!isTimeBased && isNaN(k)) {
-      Alert.alert('Error', 'Please enter an odometer interval.');
-      return;
-    }
-    
-    if (isTimeBased && isNaN(m)) {
-      Alert.alert('Error', 'Please enter a months interval.');
+    if (isNaN(k) && isNaN(m)) {
+      Alert.alert('Error', 'Please enter at least an odometer interval or a months interval based on your selection.');
       return;
     }
 
     try {
-      const newReminderPayload = {
+      const payload = {
         vehicle_id: selectedVehicleId,
-        service_type: serviceType,
-        interval_kms: isTimeBased ? null : k,
-        notify_before_kms: isTimeBased ? null : parseInt(notifyBeforeKms) || 0,
-        interval_months: isTimeBased ? m : null,
+        service_type: normalizeServiceType(serviceType),
+        interval_kms: isNaN(k) ? null : k,
+        notify_before_kms: isNaN(k) ? null : parseInt(notifyBeforeKms) || 0,
+        interval_months: isNaN(m) ? null : m,
         repeat_interval_days: parseInt(repeatIntervalDays) || null,
       };
       
-      const { data, error } = await supabase.from('reminders').insert([newReminderPayload]).select('id').single();
-      if (error) throw error;
+      let rId = editingId;
+      if (editingId) {
+        await updateReminder(editingId, payload);
+      } else {
+        const { data, error } = await supabase.from('reminders').insert([payload]).select('id').single();
+        if (error) throw error;
+        rId = data.id;
+      }
 
       import('../../lib/reminder-eval').then(mod => {
-        mod.initializeReminder(data.id);
-        if (!isTimeBased) {
+        if (rId) mod.initializeReminder(rId);
+        if (!isNaN(k)) {
           // Trigger a distance check just in case they are already overdue!
           import('../../db/queries').then(q => {
              q.getAllLogs().then(logs => {
-                const vehicleLogs = logs.filter(l => l.vehicle_id === newReminderPayload.vehicle_id);
+                const vehicleLogs = logs.filter(l => l.vehicle_id === payload.vehicle_id);
                 const maxOdo = vehicleLogs.reduce((max, log) => Math.max(max, log.odometer || 0), 0);
-                mod.evaluateAndTriggerDistanceReminders(newReminderPayload.vehicle_id, maxOdo);
+                mod.evaluateAndTriggerDistanceReminders(payload.vehicle_id, maxOdo);
              });
           });
         }
@@ -98,15 +100,19 @@ export default function RemindersScreen() {
       loadData();
       
       // Reset form
+      setEditingId(null);
+      setReminderMode('odo');
       setServiceType('');
       setIntervalKms('');
       setIntervalMonths('');
+      setNotifyBeforeKms('500');
+      setRepeatIntervalDays('7');
     } catch (e: any) {
       Alert.alert('Error saving', e.message);
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     Alert.alert('Delete Reminder', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => {
@@ -125,18 +131,38 @@ export default function RemindersScreen() {
           <Text style={{ opacity: 0.5 }}>No reminders set yet. Tap + to create one.</Text>
         ) : (
           reminders.map(r => (
-            <Card key={r.id} style={styles.card}>
+            <Card 
+              key={r.id} 
+              style={styles.card} 
+              onPress={() => {
+                setEditingId(r.id);
+                setSelectedVehicleId(r.vehicle_id);
+                setServiceType(r.service_type);
+
+                let mode: 'odo' | 'time' | 'both' = 'odo';
+                if (r.interval_kms !== null && r.interval_months !== null) mode = 'both';
+                else if (r.interval_months !== null) mode = 'time';
+                setReminderMode(mode);
+
+                setIntervalKms(r.interval_kms ? r.interval_kms.toString() : '');
+                setNotifyBeforeKms(r.notify_before_kms !== null ? r.notify_before_kms.toString() : '500');
+                setIntervalMonths(r.interval_months ? r.interval_months.toString() : '');
+                setRepeatIntervalDays(r.repeat_interval_days !== null ? r.repeat_interval_days.toString() : '7');
+                setModalVisible(true);
+              }}
+            >
               <Card.Title 
                 title={r.service_type}
                 subtitle={r.vehicle_name}
                 right={(props) => <IconButton {...props} icon="delete" onPress={() => handleDelete(r.id)} />}
               />
               <Card.Content>
-                {r.interval_months ? (
+                {r.interval_months !== null && (
                   <Text variant="bodyMedium">⏳ Every {r.interval_months} months</Text>
-                ) : (
+                )}
+                {r.interval_kms !== null && (
                   <Text variant="bodyMedium">
-                    🛣️ Every {formatNumber(r.interval_kms || 0)} km 
+                    🛣️ Every {formatNumber(r.interval_kms)} km 
                     (Alert {r.notify_before_kms} km before)
                   </Text>
                 )}
@@ -149,11 +175,11 @@ export default function RemindersScreen() {
       <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
         <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
           <ScrollView>
-            <Title style={{ marginBottom: 16 }}>Create Reminder</Title>
+            <Title style={{ marginBottom: 16 }}>{editingId ? 'Edit Reminder' : 'Create Reminder'}</Title>
             
             <Text style={styles.label}>Vehicle</Text>
             <SegmentedButtons
-              value={selectedVehicleId}
+              value={selectedVehicleId || ''}
               onValueChange={setSelectedVehicleId}
               buttons={vehicles.map(v => ({ value: v.id, label: v.alias || v.model }))}
               style={{ marginBottom: 16 }}
@@ -166,46 +192,53 @@ export default function RemindersScreen() {
               style={{ marginBottom: 8 }} 
             />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16, flexGrow: 0, height: 40 }}>
-              {serviceTypes.map(t => (
-                <Chip key={t} onPress={() => setServiceType(t)} style={{ marginRight: 8 }} compact>{t}</Chip>
-              ))}
+              {serviceTypes
+                .filter(t => t.toLowerCase().startsWith(serviceType.toLowerCase()))
+                .map(t => (
+                  <Chip key={t} onPress={() => setServiceType(t)} style={{ marginRight: 8 }} compact>{t}</Chip>
+                ))}
             </ScrollView>
 
             <SegmentedButtons
-              value={isTimeBased ? 'time' : 'odo'}
-              onValueChange={(val) => setIsTimeBased(val === 'time')}
+              value={reminderMode}
+              onValueChange={(val: any) => setReminderMode(val)}
               buttons={[
                 { value: 'odo', label: 'By Odometer' },
-                { value: 'time', label: 'By Time (Months)' },
+                { value: 'time', label: 'By Time' },
+                { value: 'both', label: 'Both' },
               ]}
               style={{ marginBottom: 16 }}
             />
 
-            {isTimeBased ? (
-              <TextInput 
-                label="Remind me every X months" 
-                value={intervalMonths} 
-                onChangeText={(t) => setIntervalMonths(t.replace(/\D/g, ''))} 
-                keyboardType="numeric" 
-                style={{ marginBottom: 16 }} 
-              />
-            ) : (
+            {(reminderMode === 'odo' || reminderMode === 'both') && (
               <>
                 <TextInput 
-                  label="Interval (e.g. 12000 kms)" 
+                  label="Odometer Interval (e.g. 12000 kms)" 
                   value={intervalKms ? formatNumber(parseInt(intervalKms.replace(/\D/g, ''))) : ''} 
                   onChangeText={(t) => setIntervalKms(t.replace(/\D/g, ''))} 
                   keyboardType="numeric" 
                   style={{ marginBottom: 16 }} 
                 />
-                <TextInput 
-                  label="Notify me X kms before" 
-                  value={notifyBeforeKms} 
-                  onChangeText={(t) => setNotifyBeforeKms(t.replace(/\D/g, ''))} 
-                  keyboardType="numeric" 
-                  style={{ marginBottom: 16 }} 
-                />
+                {intervalKms ? (
+                  <TextInput 
+                    label="Notify me X kms before" 
+                    value={notifyBeforeKms} 
+                    onChangeText={(t) => setNotifyBeforeKms(t.replace(/\D/g, ''))} 
+                    keyboardType="numeric" 
+                    style={{ marginBottom: 16 }} 
+                  />
+                ) : null}
               </>
+            )}
+
+            {(reminderMode === 'time' || reminderMode === 'both') && (
+              <TextInput 
+                label="Time Interval (e.g. 12 months)" 
+                value={intervalMonths} 
+                onChangeText={(t) => setIntervalMonths(t.replace(/\D/g, ''))} 
+                keyboardType="numeric" 
+                style={{ marginBottom: 16 }} 
+              />
             )}
 
             <TextInput 
@@ -217,10 +250,19 @@ export default function RemindersScreen() {
               placeholder="e.g. 7"
             />
 
-            <Button mode="contained" onPress={handleAdd} style={{ marginBottom: 16 }}>
+            <Button mode="contained" onPress={handleSave} style={{ marginBottom: 16 }}>
               Save Reminder
             </Button>
-            <Button onPress={() => setModalVisible(false)}>Cancel</Button>
+            <Button onPress={() => {
+              setModalVisible(false);
+              setEditingId(null);
+              setReminderMode('odo');
+              setServiceType('');
+              setIntervalKms('');
+              setIntervalMonths('');
+              setNotifyBeforeKms('500');
+              setRepeatIntervalDays('7');
+            }}>Cancel</Button>
           </ScrollView>
         </View>
       </Modal>
@@ -229,6 +271,13 @@ export default function RemindersScreen() {
         icon="plus"
         style={styles.fab}
         onPress={() => {
+          setEditingId(null);
+          setReminderMode('odo');
+          setServiceType('');
+          setIntervalKms('');
+          setIntervalMonths('');
+          setNotifyBeforeKms('500');
+          setRepeatIntervalDays('7');
           if (vehicles.length > 0) setSelectedVehicleId(vehicles[0].id);
           setModalVisible(true);
         }}

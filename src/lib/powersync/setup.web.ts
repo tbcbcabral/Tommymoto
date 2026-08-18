@@ -1,4 +1,4 @@
-import { PowerSyncDatabase } from '@powersync/react-native';
+import { PowerSyncDatabase } from '@powersync/web';
 import { AppSchema } from './AppSchema';
 import { SupabaseConnector } from './SupabaseConnector';
 import { supabase } from '../supabase';
@@ -6,7 +6,10 @@ import { supabase } from '../supabase';
 export const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
   database: {
-    dbFilename: 'mototommy.sqlite'
+    dbFilename: 'mototommy_v2.sqlite'
+  },
+  flags: {
+    enableMultiTabs: false // Disable multi-tab sync to avoid SharedWorker complexity for now
   }
 });
 

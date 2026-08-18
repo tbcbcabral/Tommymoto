@@ -12,6 +12,19 @@ const normalizeCase = (str: string) => {
 };
 
 const run = async () => {
+  console.log("Logging in...");
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email: 'tbcbcabral@hotmail.com',
+    password: 'zR1^e@#t5x9HjD',
+  });
+
+  if (authError) {
+    console.error("Login failed:", authError.message);
+    return;
+  }
+  
+  console.log("Logged in. User ID:", authData.user.id);
+  
   console.log("Homogenizing service_items...");
   const { data: items, error: itemsError } = await supabase.from('service_items').select('id, service_type');
   

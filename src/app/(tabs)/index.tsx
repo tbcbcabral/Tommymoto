@@ -2,7 +2,10 @@ import { View, StyleSheet, ScrollView, Alert, Share } from 'react-native';
 import { Text, Card, Title, Paragraph, FAB, useTheme, Button, Chip } from 'react-native-paper';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { router, useFocusEffect } from 'expo-router';
+import { File, Paths } from 'expo-file-system';
+import * as Updates from 'expo-updates';
 import { useVehicles, useAllLogs, useReminders } from '@/hooks/useData';
+import { formatNumber } from '../../lib/utils';
 
 export default function DashboardScreen() {
   const theme = useTheme();
@@ -74,49 +77,87 @@ export default function DashboardScreen() {
     const maxOdo = vehicleLogs.reduce((max, log) => Math.max(max, log.odometer || 0), 0);
 
     return vReminders.map(r => {
+      let msgs: string[] = [];
+      let maxStatus = 'ok';
+
       if (r.interval_months) {
-        return { ...r, status: 'ok', message: `Every ${r.interval_months} months` };
+        msgs.push(`⏳ Every ${r.interval_months} months`);
       }
       
-      // Odometer based
-      const maintenanceLogs = vehicleLogs.filter(l => l.type === 'maintenance');
-      let lastServiceOdo = -1;
-      
-      for (const log of maintenanceLogs) {
-        if (log.service_items?.some(i => i.service_type.toLowerCase().trim() === r.service_type.toLowerCase().trim())) {
-          if ((log.odometer || 0) > lastServiceOdo) {
-            lastServiceOdo = log.odometer || 0;
+      if (r.interval_kms) {
+        // Odometer based
+        const maintenanceLogs = vehicleLogs.filter(l => l.type === 'maintenance');
+        let lastServiceOdo = -1;
+        
+        for (const log of maintenanceLogs) {
+          if (log.raw_event?.service_items?.some((i: any) => i.service_type.toLowerCase().trim() === r.service_type.toLowerCase().trim())) {
+            if ((log.odometer || 0) > lastServiceOdo) {
+              lastServiceOdo = log.odometer || 0;
+            }
+          }
+        }
+
+        if (lastServiceOdo === -1) {
+          maxStatus = 'warning';
+          msgs.push(`🛣️ Never performed`);
+        } else {
+          const targetOdo = lastServiceOdo + (r.interval_kms || 0);
+          const warningOdo = targetOdo - (r.notify_before_kms || 0);
+
+          if (maxOdo >= targetOdo) {
+            maxStatus = 'overdue';
+            msgs.push(`🛣️ OVERDUE by ${maxOdo - targetOdo} km! (Target: ${targetOdo})`);
+          } else if (maxOdo >= warningOdo) {
+            maxStatus = maxStatus === 'overdue' ? 'overdue' : 'warning';
+            msgs.push(`🛣️ Due in ${targetOdo - maxOdo} km (Target: ${targetOdo})`);
+          } else {
+            msgs.push(`🛣️ ${targetOdo - maxOdo} km remaining`);
           }
         }
       }
 
-      if (lastServiceOdo === -1) {
-        return { ...r, status: 'warning', message: `Never performed` };
+      if (msgs.length === 0) {
+        msgs.push('No interval set');
       }
 
-      const targetOdo = lastServiceOdo + (r.interval_kms || 0);
-      const warningOdo = targetOdo - (r.notify_before_kms || 0);
-
-      if (maxOdo >= targetOdo) {
-        return { ...r, status: 'overdue', message: `OVERDUE by ${maxOdo - targetOdo} km! (Target: ${targetOdo})` };
-      } else if (maxOdo >= warningOdo) {
-        return { ...r, status: 'warning', message: `Due in ${targetOdo - maxOdo} km (Target: ${targetOdo})` };
-      }
-
-      return { ...r, status: 'ok', message: `${targetOdo - maxOdo} km remaining` };
+      return { ...r, status: maxStatus, message: msgs.join('\n') };
     });
   }, [allReminders, vehicleLogs, selectedVehicleId]);
 
   const handleBackup = async () => {
     try {
-      const FileSystem = require('expo-file-system/legacy');
       const Sharing = require('expo-sharing');
+      const { Platform } = require('react-native');
+      const { IOS_LIBRARY_PATH, ANDROID_DATABASE_PATH } = require('../../lib/sqlitePath');
       
-      const dbPath = FileSystem.documentDirectory + 'SQLite/mototommy.sqlite';
+      const potentialPaths = Platform.OS === 'ios' ? [
+        `${IOS_LIBRARY_PATH}/LocalDatabase/mototommy_v2.sqlite`,
+        `${IOS_LIBRARY_PATH}/mototommy_v2.sqlite`,
+        `${Paths.document.uri}SQLite/mototommy_v2.sqlite`,
+        `${Paths.document.uri}mototommy_v2.sqlite`
+      ] : [
+        `${ANDROID_DATABASE_PATH}/mototommy_v2.sqlite`,
+        `${ANDROID_DATABASE_PATH}mototommy_v2.sqlite`, // in case it ends with slash
+        `${Paths.document.uri}SQLite/mototommy_v2.sqlite`,
+        `${Paths.document.uri}mototommy_v2.sqlite`,
+        `${Paths.document.uri}../databases/mototommy_v2.sqlite`,
+        `file:///data/user/0/com.tbcbcabral.tommymoto/databases/mototommy_v2.sqlite`,
+        `/data/user/0/com.tbcbcabral.tommymoto/databases/mototommy_v2.sqlite`
+      ];
+
+      const sanitizePath = (p: string) => p.startsWith('file://') ? p : `file://${p}`;
+
+      let dbPath = null;
+      for (const p of potentialPaths) {
+        if (!p) continue;
+        const safeP = sanitizePath(p);
+        if (new File(safeP).exists) {
+          dbPath = safeP;
+          break;
+        }
+      }
       
-      const fileInfo = await FileSystem.getInfoAsync(dbPath);
-      
-      if (!fileInfo.exists) {
+      if (!dbPath) {
         Alert.alert("Backup Failed", "Local database file not found.");
         return;
       }
@@ -125,15 +166,39 @@ export default function DashboardScreen() {
         Alert.alert("Backup Failed", "Sharing is not available on this device.");
         return;
       }
+
+      const backupPath = new File(Paths.cache, "mototommy_backup.sqlite");
       
-      await Sharing.shareAsync(dbPath, {
+      if (backupPath.exists) {
+        backupPath.delete();
+      }
+      
+      await new File(dbPath).copy(backupPath);
+      
+      await Sharing.shareAsync(backupPath.uri, {
         dialogTitle: 'Export Mototommy Database',
         mimeType: 'application/x-sqlite3',
       });
       
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      Alert.alert("Backup Failed", "An error occurred while exporting the database.");
+      Alert.alert("Backup Failed", `Error: ${e?.message || String(e)}`);
+    }
+  };
+
+  const handleUpdateApp = async () => {
+    try {
+      const update = await Updates.checkForUpdateAsync();
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        Alert.alert('Update downloaded', 'The app will now restart to apply the update.', [
+          { text: 'OK', onPress: () => Updates.reloadAsync() }
+        ]);
+      } else {
+        Alert.alert('No updates', 'You are running the latest version of the app.');
+      }
+    } catch (e) {
+      Alert.alert('Update check failed', 'Could not check for updates. Are you running the app in development mode?');
     }
   };
 
@@ -220,10 +285,19 @@ export default function DashboardScreen() {
         <Button 
           mode="outlined" 
           icon="database-export" 
-          style={{ marginTop: 24, marginBottom: 80 }} 
+          style={{ marginTop: 24 }} 
           onPress={handleBackup}
         >
           Export Cloud Data Backup
+        </Button>
+
+        <Button 
+          mode="contained-tonal" 
+          icon="update" 
+          style={{ marginTop: 12, marginBottom: 80 }} 
+          onPress={handleUpdateApp}
+        >
+          Check for App Updates
         </Button>
       </ScrollView>
 

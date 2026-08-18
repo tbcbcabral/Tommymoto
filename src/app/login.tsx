@@ -6,6 +6,7 @@ import { Button, TextInput, Text, Surface } from 'react-native-paper';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function signInWithEmail() {
@@ -45,6 +46,9 @@ export default function Login() {
           value={email}
           placeholder="email@address.com"
           autoCapitalize={'none'}
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          autoComplete="email"
         />
       </View>
       <View style={styles.verticallySpaced}>
@@ -53,9 +57,20 @@ export default function Login() {
           left={<TextInput.Icon icon="lock" />}
           onChangeText={(text) => setPassword(text)}
           value={password}
-          secureTextEntry={true}
+          secureTextEntry={!showPassword}
+          right={
+            <TextInput.Icon 
+              icon={showPassword ? "eye" : "eye-off"} 
+              onPress={() => setShowPassword(!showPassword)} 
+            />
+          }
           placeholder="Password"
           autoCapitalize={'none'}
+          textContentType="password"
+          autoComplete="password"
+          autoCorrect={false}
+          importantForAutofill="yes"
+          nativeID="password"
         />
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>

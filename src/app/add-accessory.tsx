@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { TextInput, Button, useTheme, Text, SegmentedButtons, Chip } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { addAccessory, getVehicles, Vehicle, getAccessory, updateAccessory, getUniqueValues } from '../db/queries';
 
 export default function AddAccessoryScreen() {
@@ -16,6 +18,7 @@ export default function AddAccessoryScreen() {
   const [price, setPrice] = useState('');
   const [shop, setShop] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [receiptUri, setReceiptUri] = useState('');
   const [shops, setShops] = useState<string[]>([]);
 
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function AddAccessoryScreen() {
           setPrice(event.price.toString());
           setShop(event.shop || '');
           setDate(event.date);
+          setReceiptUri(event.receipt_image_uri || '');
         } catch (e) {
           Alert.alert('Error', 'Failed to load log details.');
           router.back();
@@ -65,7 +69,7 @@ export default function AddAccessoryScreen() {
         price: parseFloat(price.replace(',', '.')),
         shop,
         date,
-        receipt_image_uri: ''
+        receipt_image_uri: receiptUri
       };
 
       if (isEditing) {
@@ -81,6 +85,18 @@ export default function AddAccessoryScreen() {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setReceiptUri(result.assets[0].uri);
+    }
+  };
+
   if (vehicles.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background, justifyContent: 'center', alignItems: 'center', padding: 16 }]}>
@@ -91,18 +107,27 @@ export default function AddAccessoryScreen() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <KeyboardAwareScrollView 
+      style={{ flex: 1, backgroundColor: theme.colors.background }} 
+      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
+      enableOnAndroid={true} 
+      enableAutomaticScroll={true}
+      extraScrollHeight={100} 
+      keyboardShouldPersistTaps="handled">
       <View style={styles.form}>
         <Text style={styles.label}>Select vehicle</Text>
-        <SegmentedButtons
-          value={selectedVehicleId}
-          onValueChange={setSelectedVehicleId}
-          buttons={vehicles.map(v => ({
-            value: v.id.toString(),
-            label: v.alias || v.model,
-          }))}
-          style={styles.input}
-        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+          {vehicles.map(v => (
+            <Chip 
+              key={v.id} 
+              selected={selectedVehicleId === v.id}
+              onPress={() => setSelectedVehicleId(v.id.toString())}
+              style={styles.chip}
+            >
+              {v.alias || v.model}
+            </Chip>
+          ))}
+        </ScrollView>
 
         <TextInput label="Date (YYYY-MM-DD) *" value={date} onChangeText={setDate} style={styles.input} />
         <TextInput label="Accessory name *" value={name} onChangeText={setName} style={styles.input} />
@@ -116,17 +141,21 @@ export default function AddAccessoryScreen() {
           </ScrollView>
         )}
         
+        <Button icon="camera" mode="outlined" onPress={pickImage} style={styles.input}>
+          {receiptUri ? 'Change Receipt Photo' : 'Upload Receipt Photo'}
+        </Button>
+
         <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
           {isEditing ? 'Save changes' : 'Save accessory'}
         </Button>
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
   },
   form: {
     padding: 16,

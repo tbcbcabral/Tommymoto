@@ -1,8 +1,8 @@
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, Card, useTheme, SegmentedButtons, Chip, Button, FAB } from 'react-native-paper';
+import { Text, Card, useTheme, SegmentedButtons, Chip, Button, FAB, Searchbar } from 'react-native-paper';
 import { useFocusEffect, router } from 'expo-router';
-import { deleteLog } from '../../db/queries';
+import { deleteLog, LogEntry } from '../../db/queries';
 import { formatNumber } from '../../lib/utils';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useVehicles, useAllLogs } from '../../hooks/useData';
@@ -12,6 +12,7 @@ export default function LogsScreen() {
   const [filterType, setFilterType] = useState('all');
   const [filterVehicle, setFilterVehicle] = useState('all');
   const [filterBrand, setFilterBrand] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [fabOpen, setFabOpen] = useState(false);
 
@@ -24,7 +25,6 @@ export default function LogsScreen() {
       { text: 'Delete', style: 'destructive', onPress: async () => {
         try {
           await deleteLog(id);
-          loadLogs();
           setExpandedLogId(null);
         } catch (e: any) {
           Alert.alert('Error', e.message || 'Failed to delete log.');
@@ -69,7 +69,20 @@ export default function LogsScreen() {
     const matchType = filterType === 'all' || log.type === filterType;
     const matchVehicle = filterVehicle === 'all' || log.vehicle_name === filterVehicle;
     const matchBrand = filterBrand === 'all' || log.brand === filterBrand;
-    return matchType && matchVehicle && matchBrand;
+    
+    let matchSearch = true;
+    if (searchQuery.trim().length > 0) {
+      const q = searchQuery.toLowerCase();
+      const titleMatch = log.title?.toLowerCase().includes(q);
+      const subMatch = log.subtitle?.toLowerCase().includes(q);
+      const brandMatch = log.brand?.toLowerCase().includes(q);
+      const typeMatch = log.type?.toLowerCase().includes(q);
+      const itemsMatch = log.raw_event?.service_items?.some((i: any) => i.service_type?.toLowerCase().includes(q) || i.note?.toLowerCase().includes(q));
+      
+      matchSearch = !!(titleMatch || subMatch || brandMatch || typeMatch || itemsMatch);
+    }
+
+    return matchType && matchVehicle && matchBrand && matchSearch;
   });
 
   useEffect(() => {
@@ -99,6 +112,13 @@ export default function LogsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.filterContainer}>
+        <Searchbar
+          placeholder="Search logs..."
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.searchbar}
+        />
+
         <SegmentedButtons
           value={filterType}
           onValueChange={setFilterType}
@@ -169,6 +189,7 @@ export default function LogsScreen() {
               <Card.Content>
                 <View style={styles.detailsRow}>
                   {!!log.brand && <Text variant="bodySmall" style={styles.detailText}>🏷️ {log.brand}</Text>}
+                  {log.type === 'maintenance' && !!log.raw_event?.garage && <Text variant="bodySmall" style={styles.detailText}>🏢 {log.raw_event.garage}</Text>}
                   {log.odometer !== undefined && <Text variant="bodySmall" style={styles.detailText}>🛣️ {formatNumber(log.odometer)} km</Text>}
                   {log.liters !== undefined && <Text variant="bodySmall" style={styles.detailText}>⛽ {log.liters} L</Text>}
                   {log.consumption !== undefined && <Text variant="bodySmall" style={[styles.detailText, {color: theme.colors.primary, fontWeight: 'bold'}]}>📈 {log.consumption.toFixed(2)} L/100km</Text>}
@@ -177,10 +198,10 @@ export default function LogsScreen() {
 
                 {expandedLogId === log.id && (
                   <>
-                    {log.service_items && log.service_items.length > 0 && (
+                    {log.raw_event?.service_items && log.raw_event.service_items.length > 0 && (
                       <View style={styles.expandedItemsContainer}>
                         <Text variant="titleSmall" style={{ marginTop: 12, marginBottom: 8, opacity: 0.8 }}>Service Items:</Text>
-                        {log.service_items.map((item, idx) => (
+                        {log.raw_event.service_items.map((item: any, idx: number) => (
                           <View key={idx} style={styles.serviceItemRow}>
                             <View style={{ flex: 1 }}>
                               <Text variant="bodyMedium">• {item.service_type}</Text>
@@ -200,7 +221,6 @@ export default function LogsScreen() {
               </Card.Content>
             </Card>
           ))
-        )}
         )}
       </ScrollView>
 
@@ -248,6 +268,10 @@ const styles = StyleSheet.create({
   filterContainer: {
     padding: 16,
     paddingBottom: 0,
+  },
+  searchbar: {
+    marginBottom: 12,
+    elevation: 0,
   },
   segmentedButtons: {
     width: '100%',

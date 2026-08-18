@@ -19,12 +19,12 @@ export default function ArchivedScreen() {
     }, [])
   );
 
-  const handleRestore = async (id: number) => {
+  const handleRestore = async (id: string) => {
     await restoreVehicle(id);
     loadVehicles();
   };
 
-  const handlePermanentDelete = (id: number, make: string, model: string) => {
+  const handlePermanentDelete = (id: string, make: string, model: string) => {
     Alert.alert(
       "PERMANENTLY DELETE?",
       `Are you ABSOLUTELY sure you want to permanently delete ${make} ${model}? This CANNOT be undone and all logs will be permanently destroyed.`,

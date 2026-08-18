@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
-import { TextInput, Button, useTheme, Text, SegmentedButtons, Avatar, IconButton, Chip } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Alert, TouchableOpacity, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { TextInput, Button, useTheme, Text, SegmentedButtons, Avatar, IconButton, Chip, Menu } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { getVehicles, Vehicle, addMaintenanceEvent, getMaintenanceEvent, updateMaintenanceEvent, getUniqueValues } from '../db/queries';
-import { formatNumber } from '../lib/utils';
+import { formatNumber, normalizeServiceType } from '../lib/utils';
 import { scheduleMaintenanceReminder } from '../lib/notifications';
 
 export default function AddMaintenanceScreen() {
@@ -20,6 +22,7 @@ export default function AddMaintenanceScreen() {
   
   const [garages, setGarages] = useState<string[]>([]);
   const [serviceTypes, setServiceTypes] = useState<string[]>([]);
+  const [menuVisible, setMenuVisible] = useState<{[key: number]: boolean}>({});
   
   // Dynamic list of service items
   const [items, setItems] = useState([{ service_type: '', price: '', note: '' }]);
@@ -58,9 +61,25 @@ export default function AddMaintenanceScreen() {
       }
       getUniqueValues('maintenance_events', 'garage').then(setGarages);
       getUniqueValues('service_items', 'service_type').then(dbServices => {
-        // Merge with defaults and remove duplicates
-        const merged = Array.from(new Set([...DEFAULT_SERVICES, ...dbServices]));
-        setServiceTypes(merged);
+        const translations: Record<string, string> = {
+          'óleo': 'Oil change', 'oleo': 'Oil change', 'mudança de óleo': 'Oil change',
+          'filtro de óleo': 'Oil filter change', 'filtro de oleo': 'Oil filter change',
+          'bateria': 'Battery replacement', 'pastilhas': 'Brake pad change',
+          'pastilhas frente': 'Brake pad change (front)', 'pastilhas trás': 'Brake pad change (back)',
+          'corrente': 'Transmission kit', 'kit de transmissão': 'Transmission kit',
+          'mão de obra': 'Labor', 'mao de obra': 'Labor',
+          'pneu frente': 'Tire (front)', 'pneu trás': 'Tire (back)', 'velas': 'Spark plugs replacement'
+        };
+
+        const processed = [...DEFAULT_SERVICES, ...dbServices].map(t => {
+          if (!t) return '';
+          const norm = t.toLowerCase().trim();
+          if (translations[norm]) return translations[norm];
+          return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+        }).filter(t => t !== '');
+
+        const uniqueSorted = Array.from(new Set(processed)).sort((a, b) => a.localeCompare(b));
+        setServiceTypes(uniqueSorted);
       });
     };
     load();
@@ -99,7 +118,7 @@ export default function AddMaintenanceScreen() {
         odometer: parseInt(odometer),
         receipt_image_uri: receiptUri,
         items: validItems.map(item => ({
-          service_type: item.service_type || 'General Service',
+          service_type: normalizeServiceType(item.service_type) || 'General Service',
           price: parseFloat(item.price.replace(',', '.')) || 0,
           note: item.note || ''
         }))
@@ -125,6 +144,18 @@ export default function AddMaintenanceScreen() {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setReceiptUri(result.assets[0].uri);
+    }
+  };
+
   if (vehicles.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -137,17 +168,26 @@ export default function AddMaintenanceScreen() {
   const totalPrice = items.reduce((sum, item) => sum + (parseFloat(item.price.replace(',', '.')) || 0), 0);
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <KeyboardAwareScrollView 
+      style={{ flex: 1, backgroundColor: theme.colors.background }} 
+      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
+      enableOnAndroid={true} 
+      enableAutomaticScroll={true}
+      extraScrollHeight={100} 
+      keyboardShouldPersistTaps="handled">
       <Text style={styles.label}>Select Vehicle</Text>
-      <SegmentedButtons
-        value={selectedVehicleId}
-        onValueChange={setSelectedVehicleId}
-        buttons={vehicles.map(v => ({
-          value: v.id.toString(),
-          label: v.alias || v.model,
-        }))}
-        style={styles.input}
-      />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        {vehicles.map(v => (
+          <Chip 
+            key={v.id} 
+            selected={selectedVehicleId === v.id}
+            onPress={() => setSelectedVehicleId(v.id.toString())}
+            style={styles.chip}
+          >
+            {v.alias || v.model}
+          </Chip>
+        ))}
+      </ScrollView>
 
       <TextInput label="Date (YYYY-MM-DD) *" value={date} onChangeText={setDate} style={styles.input} />
       <TextInput label="Odometer (km) *" value={odometer} onChangeText={(t) => setOdometer(t.replace(/\D/g, ''))} keyboardType="number-pad" style={styles.input} />
@@ -166,51 +206,75 @@ export default function AddMaintenanceScreen() {
         ) : (
           <Avatar.Icon size={80} icon="receipt" />
         )}
-        <Button onPress={() => Alert.alert('Coming Soon', 'Photo upload coming soon')}>Upload Receipt</Button>
+        <Button onPress={pickImage}>{receiptUri ? 'Change Receipt Photo' : 'Upload Receipt Photo'}</Button>
       </View>
 
       <Text style={[styles.label, { marginTop: 16 }]}>Service items & parts</Text>
-      {items.map((item, index) => (
-        <View key={index} style={styles.itemWrapper}>
-          <View style={styles.itemRow}>
-            <TextInput 
-              label="Item (e.g. oil change)" 
-              value={item.service_type} 
-              onChangeText={(val) => handleUpdateItem(index, 'service_type', val)} 
-              style={[styles.input, { flex: 2, marginBottom: 0 }]} 
-            />
+      {items.map((item, index) => {
+        const filteredServices = serviceTypes
+          .filter(t => t.toLowerCase().includes(item.service_type.toLowerCase()) && t !== item.service_type)
+          .slice(0, 5);
+
+        return (
+          <View key={index} style={styles.itemWrapper}>
+            <View style={styles.itemRow}>
+              <View style={{ flex: 2 }}>
+                <Menu
+                  visible={menuVisible[index] && filteredServices.length > 0}
+                  onDismiss={() => setMenuVisible({...menuVisible, [index]: false})}
+                  anchorPosition="bottom"
+                  style={{ marginTop: 50, maxWidth: 250 }}
+                  anchor={
+                    <TextInput 
+                      label="Item (e.g. oil change)" 
+                      value={item.service_type} 
+                      onChangeText={(val) => {
+                        handleUpdateItem(index, 'service_type', val);
+                        setMenuVisible({...menuVisible, [index]: true});
+                      }}
+                      onFocus={() => setMenuVisible({...menuVisible, [index]: true})}
+                      style={[styles.input, { marginBottom: 0 }]} 
+                    />
+                  }
+                >
+                  {filteredServices.map((t) => (
+                    <Menu.Item 
+                      key={t} 
+                      onPress={() => {
+                        handleUpdateItem(index, 'service_type', t);
+                        setMenuVisible({...menuVisible, [index]: false});
+                      }} 
+                      title={t} 
+                    />
+                  ))}
+                </Menu>
+              </View>
+              <TextInput 
+                label="Price (€)" 
+                value={item.price} 
+                onChangeText={(val) => handleUpdateItem(index, 'price', val.replace(/,/g, '.').replace(/[^0-9.]/g, ''))} 
+                keyboardType="numbers-and-punctuation" 
+                style={[styles.input, { flex: 1, marginBottom: 0 }]} 
+              />
+            {items.length > 1 && (
+              <IconButton 
+                icon="delete" 
+                iconColor={theme.colors.error}
+                size={24}
+                onPress={() => handleRemoveItem(index)}
+                style={{ alignSelf: 'center', margin: 0 }}
+              />
+            )}
+          </View>
           <TextInput 
-            label="Price (€)" 
-            value={item.price} 
-            onChangeText={(val) => handleUpdateItem(index, 'price', val.replace(/,/g, '.').replace(/[^0-9.]/g, ''))} 
-            keyboardType="numbers-and-punctuation" 
-            style={[styles.input, { flex: 1, marginBottom: 0 }]} 
+            label="Note (optional)" 
+            value={item.note} 
+            onChangeText={(val) => handleUpdateItem(index, 'note', val)} 
+            style={[styles.input, { marginBottom: 8 }]} 
           />
-          {items.length > 1 && (
-            <IconButton 
-              icon="delete" 
-              iconColor={theme.colors.error}
-              size={24}
-              onPress={() => handleRemoveItem(index)}
-              style={{ alignSelf: 'center', margin: 0 }}
-            />
-          )}
         </View>
-        <TextInput 
-          label="Note (optional)" 
-          value={item.note} 
-          onChangeText={(val) => handleUpdateItem(index, 'note', val)} 
-          style={[styles.input, { marginBottom: 8 }]} 
-        />
-        {serviceTypes.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.serviceChipScroll}>
-            {serviceTypes.map((t) => (
-              <Chip key={t} onPress={() => handleUpdateItem(index, 'service_type', t)} style={styles.chip} compact>{t}</Chip>
-            ))}
-          </ScrollView>
-        )}
-      </View>
-      ))}
+        );
+      })}
 
       <Button icon="plus" mode="outlined" onPress={handleAddItem} style={styles.addItemBtn}>
         Add another item
@@ -226,13 +290,13 @@ export default function AddMaintenanceScreen() {
       <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
         {isEditing ? 'Save changes' : 'Save maintenance log'}
       </Button>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 16,
   },
   input: {

@@ -59,7 +59,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <PaperProvider theme={colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme}>
-        <PowerSyncContext.Provider value={powerSync}>
+        <PowerSyncContext.Provider value={powerSync as any}>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="add-vehicle" options={{ presentation: 'modal', title: 'Add Vehicle' }} />

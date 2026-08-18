@@ -6,8 +6,8 @@ import { getAccessories } from '../../db/queries';
 import { formatNumber } from '../../lib/utils';
 
 type AccessoryWithVehicleName = {
-  id: number;
-  vehicle_id: number;
+  id: string;
+  vehicle_id: string;
   name: string;
   price: number;
   shop: string;
@@ -23,7 +23,7 @@ export default function AccessoriesScreen() {
   const loadAccessories = async () => {
     try {
       const data = await getAccessories();
-      setAccessories(data);
+      setAccessories(data as unknown as AccessoryWithVehicleName[]);
     } catch (error) {
       console.error('Error loading accessories:', error);
     }

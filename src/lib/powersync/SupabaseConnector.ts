@@ -1,4 +1,4 @@
-import { PowerSyncBackendConnector, AbstractPowerSyncDatabase, UpdateType } from "@powersync/react-native";
+import { PowerSyncBackendConnector, AbstractPowerSyncDatabase, UpdateType } from "@powersync/common";
 import { supabase } from "../supabase";
 
 export class SupabaseConnector implements PowerSyncBackendConnector {
@@ -35,7 +35,7 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
             break;
             
           case UpdateType.PATCH:
-            const { error: patchErr } = await supabase.from(table).update(op.opData).eq('id', op.id);
+            const { error: patchErr } = await supabase.from(table).update(op.opData!).eq('id', op.id);
             if (patchErr) throw patchErr;
             break;
             

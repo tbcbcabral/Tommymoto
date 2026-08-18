@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { TextInput, Button, useTheme, Text, SegmentedButtons, Chip } from 'react-native-paper';
-import { router } from 'expo-router';
-import { getVehicles, Vehicle, addExpense } from '../db/queries';
+import { router, useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { getVehicles, Vehicle, addExpense, getExpense, updateExpense } from '../db/queries';
 
 export default function AddExpenseScreen() {
   const theme = useTheme();
+  const { logId } = useLocalSearchParams();
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
@@ -13,6 +16,7 @@ export default function AddExpenseScreen() {
   const [expenseType, setExpenseType] = useState('Insurance');
   const [price, setPrice] = useState('');
   const [notes, setNotes] = useState('');
+  const [receiptUri, setReceiptUri] = useState('');
 
   const EXPENSE_TYPES = ['Insurance', 'Taxes', 'Tolls', 'Fines', 'Parking', 'Other'];
 
@@ -27,6 +31,7 @@ export default function AddExpenseScreen() {
         setExpenseType(event.expense_type);
         setPrice(event.price.toString());
         setNotes(event.notes || '');
+        setReceiptUri(event.receipt_image_uri || '');
       } else if (data.length > 0) {
         const def = data.find(v => v.is_default);
         setSelectedVehicleId((def || data[0]).id);
@@ -47,7 +52,8 @@ export default function AddExpenseScreen() {
         date,
         expense_type: expenseType,
         price: parseFloat(price.replace(',', '.')),
-        notes
+        notes,
+        receipt_image_uri: receiptUri
       };
 
       if (logId) {
@@ -63,6 +69,18 @@ export default function AddExpenseScreen() {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setReceiptUri(result.assets[0].uri);
+    }
+  };
+
   if (vehicles.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -73,17 +91,26 @@ export default function AddExpenseScreen() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <KeyboardAwareScrollView 
+      style={{ flex: 1, backgroundColor: theme.colors.background }} 
+      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
+      enableOnAndroid={true} 
+      enableAutomaticScroll={true}
+      extraScrollHeight={100} 
+      keyboardShouldPersistTaps="handled">
       <Text style={styles.label}>Select Vehicle</Text>
-      <SegmentedButtons
-        value={selectedVehicleId}
-        onValueChange={setSelectedVehicleId}
-        buttons={vehicles.map(v => ({
-          value: v.id.toString(),
-          label: v.alias || v.model,
-        }))}
-        style={styles.input}
-      />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        {vehicles.map(v => (
+          <Chip 
+            key={v.id} 
+            selected={selectedVehicleId === v.id}
+            onPress={() => setSelectedVehicleId(v.id.toString())}
+            style={styles.chip}
+          >
+            {v.alias || v.model}
+          </Chip>
+        ))}
+      </ScrollView>
 
       <TextInput label="Date (YYYY-MM-DD) *" value={date} onChangeText={setDate} style={styles.input} />
       
@@ -110,16 +137,20 @@ export default function AddExpenseScreen() {
       />
       <TextInput label="Notes (optional)" value={notes} onChangeText={setNotes} style={styles.input} />
 
+      <Button icon="camera" mode="outlined" onPress={pickImage} style={styles.input}>
+        {receiptUri ? 'Change Receipt Photo' : 'Upload Receipt Photo'}
+      </Button>
+
       <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
         Save expense
       </Button>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 16,
   },
   input: {

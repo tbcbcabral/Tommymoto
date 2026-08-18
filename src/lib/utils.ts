@@ -13,3 +13,10 @@ export function formatNumber(value: number): string {
   
   return parts.join('.');
 }
+
+export function normalizeServiceType(str: string): string {
+  if (!str) return str;
+  const trimmed = str.trim();
+  if (trimmed.length === 0) return trimmed;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}

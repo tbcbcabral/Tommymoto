@@ -299,6 +299,21 @@ export const addReminder = async (reminder: Omit<Reminder, 'id' | 'created_at' |
   return id;
 };
 
+export const updateReminder = async (id: string, reminder: Partial<Omit<Reminder, 'id' | 'created_at' | 'vehicle_name' | 'active_notification_ids'>>) => {
+  const updates: string[] = [];
+  const params: any[] = [];
+  
+  for (const [key, value] of Object.entries(reminder)) {
+    updates.push(`${key} = ?`);
+    params.push(value);
+  }
+  
+  if (updates.length === 0) return;
+  params.push(id);
+  
+  await powerSync.execute(`UPDATE reminders SET ${updates.join(', ')} WHERE id = ?`, params);
+};
+
 export const updateReminderNotifications = async (id: string, active_notification_ids: string | null) => {
   await powerSync.execute('UPDATE reminders SET active_notification_ids = ? WHERE id = ?', [active_notification_ids, id]);
 };

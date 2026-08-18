@@ -19,12 +19,12 @@ export default function GarageScreen() {
     }, [])
   );
 
-  const handleSetDefault = async (id: number) => {
+  const handleSetDefault = async (id: string) => {
     await setDefaultVehicle(id);
     loadVehicles();
   };
 
-  const handleDelete = (id: number, make: string, model: string) => {
+  const handleDelete = (id: string, make: string, model: string) => {
     Alert.alert(
       "Archive Vehicle",
       `Are you sure you want to archive ${make} ${model}? It will be hidden from the garage.`,

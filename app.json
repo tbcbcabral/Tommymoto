@@ -7,6 +7,12 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mototommy",
     "userInterfaceStyle": "automatic",
+    "updates": {
+      "url": "https://u.expo.dev/c5e753f9-b66e-4d8c-a73d-cdf13ae91b83"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -21,7 +27,8 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
+      "output": "single",
+      "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -43,11 +50,14 @@
             "ndkVersion": "27.1.12297006"
           }
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": true,
+      "baseUrl": "/Mototommy"
     },
     "extra": {
       "router": {},
