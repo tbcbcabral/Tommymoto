@@ -1,16 +1,29 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Platform, View, Text } from 'react-native';
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../lib/store';
 import { registerForPushNotificationsAsync } from '../lib/notifications';
-import { PowerSyncContext } from '@powersync/react';
+import { PowerSyncContext, usePowerSyncStatus } from '@powersync/react';
 import { powerSync, setupPowerSync } from '../lib/powersync/setup';
 
 SplashScreen.preventAutoHideAsync();
+
+function DebugOverlay() {
+  if (Platform.OS !== 'web') return null;
+  const status = usePowerSyncStatus();
+  return (
+    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, zIndex: 9999 }}>
+      <Text style={{ color: 'white', fontSize: 10 }}>PowerSync Status: {status.connected ? 'Connected' : 'Disconnected'}</Text>
+      <Text style={{ color: 'white', fontSize: 10 }}>Syncing: {status.dataFlowStatus.downloading ? 'Downloading' : 'Idle'} | {status.dataFlowStatus.uploading ? 'Uploading' : 'Idle'}</Text>
+      {status.dataFlowStatus.error && <Text style={{ color: 'red', fontSize: 10 }}>Error: {String(status.dataFlowStatus.error)}</Text>}
+      <Text style={{ color: 'white', fontSize: 10 }}>Has Synced: {status.hasSynced ? 'Yes' : 'No'}</Text>
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -70,6 +83,7 @@ export default function RootLayout() {
             <Stack.Screen name="archived" options={{ presentation: 'modal', title: 'Archived Vehicles' }} />
             <Stack.Screen name="login" options={{ headerShown: false }} />
           </Stack>
+          <DebugOverlay />
         </PowerSyncContext.Provider>
       </PaperProvider>
     </ThemeProvider>
