@@ -40,6 +40,7 @@
     "expo-updates": "~57.0.14",
     "expo-web-browser": "~57.0.2",
     "lucide-react-native": "^1.31.0",
+    "puppeteer": "^25.8.0",
     "react": "19.2.3",
     "react-dom": "^19.2.3",
     "react-native": "0.86.2",
