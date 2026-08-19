@@ -39,18 +39,42 @@ export default function DashboardScreen() {
     let totalExpenses = 0;
     let maxOdo = 0;
     let minOdo = Infinity;
+
+    let expenses30d = 0;
+    let maxOdo30d = 0;
+    let minOdo30d = Infinity;
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoMs = thirtyDaysAgo.getTime();
     
     // Accumulate expenses and find min/max odometer
     vehicleLogs.forEach(log => {
-      totalExpenses += (log.price || 0);
+      const logDate = new Date(log.date).getTime();
+      const isWithin30d = logDate >= thirtyDaysAgoMs;
+
+      if (log.type === 'refuel') {
+        totalExpenses += (log.price || 0);
+        if (isWithin30d) {
+          expenses30d += (log.price || 0);
+        }
+      }
+
       if (log.odometer !== undefined && log.odometer !== null && log.odometer > 0) {
         if (log.odometer > maxOdo) maxOdo = log.odometer;
         if (log.odometer < minOdo) minOdo = log.odometer;
+
+        if (isWithin30d) {
+          if (log.odometer > maxOdo30d) maxOdo30d = log.odometer;
+          if (log.odometer < minOdo30d) minOdo30d = log.odometer;
+        }
       }
     });
 
     const totalDistance = minOdo !== Infinity && maxOdo > minOdo ? maxOdo - minOdo : 0;
     const costPerKm = totalDistance > 0 ? totalExpenses / totalDistance : 0;
+    
+    const distance30d = minOdo30d !== Infinity && maxOdo30d > minOdo30d ? maxOdo30d - minOdo30d : 0;
 
     // Calculate Average Consumption from all logs
     const refuelsWithConsumption = vehicleLogs.filter(l => l.type === 'refuel' && l.consumption && l.consumption > 0 && l.consumption < 50);
@@ -62,7 +86,9 @@ export default function DashboardScreen() {
       totalDistance,
       totalExpenses,
       costPerKm,
-      avgL100km: avgFuelConsumption
+      avgL100km: avgFuelConsumption,
+      expenses30d,
+      distance30d
     };
   }, [vehicleLogs]);
 
@@ -234,7 +260,7 @@ export default function DashboardScreen() {
           
           <Card style={styles.statCard}>
             <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Total Expenses</Text>
+              <Text variant="labelMedium">Total Fuel Spent</Text>
               <Text variant="titleLarge" style={{ marginTop: 4 }}>€{formatNumber(Math.round(stats.totalExpenses))}</Text>
             </Card.Content>
           </Card>
@@ -251,9 +277,29 @@ export default function DashboardScreen() {
           
           <Card style={styles.statCard}>
             <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Cost / km</Text>
+              <Text variant="labelMedium">Fuel Cost / km</Text>
               <Text variant="titleLarge" style={{ marginTop: 4, color: theme.colors.error }}>
                 {stats.costPerKm > 0 ? `€${stats.costPerKm.toFixed(2)}` : 'N/A'}
+              </Text>
+            </Card.Content>
+          </Card>
+        </View>
+        
+        <View style={[styles.statsContainer, { marginTop: 12 }]}>
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: 'center' }}>
+              <Text variant="labelMedium">Distance (30d)</Text>
+              <Text variant="titleLarge" style={{ marginTop: 4 }}>
+                {stats.distance30d > 0 ? formatNumber(stats.distance30d) : 0} km
+              </Text>
+            </Card.Content>
+          </Card>
+          
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: 'center' }}>
+              <Text variant="labelMedium">Fuel Spent (30d)</Text>
+              <Text variant="titleLarge" style={{ marginTop: 4 }}>
+                €{formatNumber(Math.round(stats.expenses30d))}
               </Text>
             </Card.Content>
           </Card>
