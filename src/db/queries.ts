@@ -240,6 +240,7 @@ export type LogEntry = {
   odometer?: number;
   is_full_tank?: boolean;
   consumption?: number;
+  cost_per_km?: number;
   service_items?: { service_type: string; price: number; note?: string }[];
   raw_event?: any;
 };

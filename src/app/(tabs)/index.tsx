@@ -37,8 +37,11 @@ export default function DashboardScreen() {
   // Analytics Statistics
   const stats = useMemo(() => {
     let totalExpenses = 0;
+    let totalMaintenanceExpenses = 0;
     let maxOdo = 0;
     let minOdo = Infinity;
+    let maxFuelOdo = 0;
+    let minFuelOdo = Infinity;
 
     let expenses30d = 0;
     let maxOdo30d = 0;
@@ -58,11 +61,18 @@ export default function DashboardScreen() {
         if (isWithin30d) {
           expenses30d += (log.price || 0);
         }
+      } else if (log.type === 'maintenance') {
+        totalMaintenanceExpenses += (log.price || 0);
       }
 
       if (log.odometer !== undefined && log.odometer !== null && log.odometer > 0) {
         if (log.odometer > maxOdo) maxOdo = log.odometer;
         if (log.odometer < minOdo) minOdo = log.odometer;
+
+        if (log.type === 'refuel') {
+          if (log.odometer > maxFuelOdo) maxFuelOdo = log.odometer;
+          if (log.odometer < minFuelOdo) minFuelOdo = log.odometer;
+        }
 
         if (isWithin30d) {
           if (log.odometer > maxOdo30d) maxOdo30d = log.odometer;
@@ -72,7 +82,6 @@ export default function DashboardScreen() {
     });
 
     const totalDistance = minOdo !== Infinity && maxOdo > minOdo ? maxOdo - minOdo : 0;
-    const costPerKm = totalDistance > 0 ? totalExpenses / totalDistance : 0;
     
     const distance30d = minOdo30d !== Infinity && maxOdo30d > minOdo30d ? maxOdo30d - minOdo30d : 0;
 
@@ -82,10 +91,17 @@ export default function DashboardScreen() {
       ? refuelsWithConsumption.reduce((sum, l) => sum + (l.consumption || 0), 0) / refuelsWithConsumption.length 
       : 0;
 
+    // Calculate Cost Per Km from valid intervals
+    const refuelsWithCostPerKm = vehicleLogs.filter(l => l.type === 'refuel' && l.cost_per_km !== undefined && l.cost_per_km > 0 && l.cost_per_km < 5);
+    const avgCostPerKm = refuelsWithCostPerKm.length > 0 
+      ? refuelsWithCostPerKm.reduce((sum, l) => sum + (l.cost_per_km || 0), 0) / refuelsWithCostPerKm.length 
+      : 0;
+
     return {
       totalDistance,
       totalExpenses,
-      costPerKm,
+      totalMaintenanceExpenses,
+      costPerKm: avgCostPerKm,
       avgL100km: avgFuelConsumption,
       expenses30d,
       distance30d
@@ -303,6 +319,19 @@ export default function DashboardScreen() {
               </Text>
             </Card.Content>
           </Card>
+        </View>
+
+        <View style={[styles.statsContainer, { marginTop: 12 }]}>
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: 'center' }}>
+              <Text variant="labelMedium">Total Maint. Spent</Text>
+              <Text variant="titleLarge" style={{ marginTop: 4 }}>
+                €{formatNumber(Math.round(stats.totalMaintenanceExpenses))}
+              </Text>
+            </Card.Content>
+          </Card>
+          
+          <View style={[styles.statCard, { backgroundColor: 'transparent', elevation: 0 }]} />
         </View>
 
         <Title style={[styles.header, { marginTop: 24 }]}>Reminders</Title>

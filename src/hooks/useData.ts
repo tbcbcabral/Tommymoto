@@ -53,21 +53,28 @@ export function useAllLogs() {
       
       let lastFullTankOdo: number | null = null;
       let litersSinceLastFullTank = 0;
+      let costSinceLastFullTank = 0;
 
       vehicleRefuels.forEach(r => {
         let consumption: number | undefined;
+        let cost_per_km: number | undefined;
 
         if (r.is_full_tank === 1 && lastFullTankOdo !== null && r.odometer && r.odometer > lastFullTankOdo) {
           const distance = r.odometer - lastFullTankOdo;
           const totalLiters = litersSinceLastFullTank + (r.liters || 0);
           consumption = (totalLiters / distance) * 100;
+
+          const totalCost = costSinceLastFullTank + (r.total_price || 0);
+          cost_per_km = totalCost / distance;
         }
 
         if (r.is_full_tank === 1 && r.odometer) {
           lastFullTankOdo = r.odometer;
           litersSinceLastFullTank = 0;
+          costSinceLastFullTank = 0;
         } else if (r.is_full_tank === 0 || r.is_full_tank === null) {
           litersSinceLastFullTank += (r.liters || 0);
+          costSinceLastFullTank += (r.total_price || 0);
         }
 
         logs.push({
@@ -84,6 +91,7 @@ export function useAllLogs() {
           is_full_tank: r.is_full_tank === 1,
           brand: r.petrol_station_brand,
           consumption,
+          cost_per_km,
           raw_event: r
         });
       });
