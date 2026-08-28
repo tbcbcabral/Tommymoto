@@ -7,14 +7,14 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../lib/store';
 import { registerForPushNotificationsAsync } from '../lib/notifications';
-import { PowerSyncContext, usePowerSyncStatus } from '@powersync/react';
+import { PowerSyncContext, useStatus } from '@powersync/react';
 import { powerSync, setupPowerSync } from '../lib/powersync/setup';
 
 SplashScreen.preventAutoHideAsync();
 
 function DebugOverlay() {
+  const status = useStatus();
   if (Platform.OS !== 'web') return null;
-  const status = usePowerSyncStatus();
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, zIndex: 9999 }}>
       <Text style={{ color: 'white', fontSize: 10 }}>PowerSync Status: {status.connected ? 'Connected' : 'Disconnected'}</Text>

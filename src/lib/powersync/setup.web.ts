@@ -7,7 +7,7 @@ export const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
   database: {
     dbFilename: 'mototommy_v2.sqlite',
-    worker: '/Tommymoto/@powersync/worker.js'
+    worker: (typeof __DEV__ !== 'undefined' && __DEV__) ? '/@powersync/worker.js' : '/Tommymoto/@powersync/worker.js'
   },
   flags: {
     enableMultiTabs: false // Disable multi-tab sync to avoid SharedWorker complexity for now

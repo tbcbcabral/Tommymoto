@@ -1,37 +1,53 @@
-import { View, StyleSheet, ScrollView, Alert, Share } from 'react-native';
-import { Text, Card, Title, Paragraph, FAB, useTheme, Button, Chip } from 'react-native-paper';
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { router, useFocusEffect } from 'expo-router';
-import { File, Paths } from 'expo-file-system';
-import * as Updates from 'expo-updates';
-import { useVehicles, useAllLogs, useReminders } from '@/hooks/useData';
-import { formatNumber } from '../../lib/utils';
+import { View, StyleSheet, ScrollView, Alert, Share } from "react-native";
+import {
+  Text,
+  Card,
+  Title,
+  Paragraph,
+  FAB,
+  useTheme,
+  Button,
+  Chip,
+} from "react-native-paper";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { Image } from "expo-image";
+import * as Updates from "expo-updates";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useVehicles, useAllLogs, useReminders } from "@/hooks/useData";
+import { formatNumber } from "../../lib/utils";
 
 export default function DashboardScreen() {
   const theme = useTheme();
   const [fabOpen, setFabOpen] = useState(false);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
-  
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
+    null,
+  );
+
   const vehicles = useVehicles();
   const logs = useAllLogs();
   const allReminders = useReminders();
 
   useEffect(() => {
     if (vehicles.length > 0 && selectedVehicleId === null) {
-      const def = vehicles.find(v => v.is_default);
+      const def = vehicles.find((v) => v.is_default);
       setSelectedVehicleId((def || vehicles[0]).id);
     }
   }, [vehicles, selectedVehicleId]);
 
-  const selectedVehicleName = useMemo(() => {
-    const v = vehicles.find(v => v.id === selectedVehicleId);
-    return v ? (v.alias || `${v.make} ${v.model}`) : 'Vehicle';
+  const selectedVehicle = useMemo(() => {
+    return vehicles.find((v) => v.id === selectedVehicleId);
   }, [vehicles, selectedVehicleId]);
+
+  const selectedVehicleName = selectedVehicle
+    ? selectedVehicle.alias ||
+      `${selectedVehicle.make} ${selectedVehicle.model}`
+    : "Vehicle";
 
   // Filter logs for the selected vehicle
   const vehicleLogs = useMemo(() => {
     if (selectedVehicleId === null) return [];
-    return logs.filter(l => l.vehicle_id === selectedVehicleId);
+    return logs.filter((l) => l.vehicle_id === selectedVehicleId);
   }, [logs, selectedVehicleId]);
 
   // Analytics Statistics
@@ -50,26 +66,30 @@ export default function DashboardScreen() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoMs = thirtyDaysAgo.getTime();
-    
+
     // Accumulate expenses and find min/max odometer
-    vehicleLogs.forEach(log => {
+    vehicleLogs.forEach((log) => {
       const logDate = new Date(log.date).getTime();
       const isWithin30d = logDate >= thirtyDaysAgoMs;
 
-      if (log.type === 'refuel') {
-        totalExpenses += (log.price || 0);
+      if (log.type === "refuel") {
+        totalExpenses += log.price || 0;
         if (isWithin30d) {
-          expenses30d += (log.price || 0);
+          expenses30d += log.price || 0;
         }
-      } else if (log.type === 'maintenance') {
-        totalMaintenanceExpenses += (log.price || 0);
+      } else if (log.type === "maintenance") {
+        totalMaintenanceExpenses += log.price || 0;
       }
 
-      if (log.odometer !== undefined && log.odometer !== null && log.odometer > 0) {
+      if (
+        log.odometer !== undefined &&
+        log.odometer !== null &&
+        log.odometer > 0
+      ) {
         if (log.odometer > maxOdo) maxOdo = log.odometer;
         if (log.odometer < minOdo) minOdo = log.odometer;
 
-        if (log.type === 'refuel') {
+        if (log.type === "refuel") {
           if (log.odometer > maxFuelOdo) maxFuelOdo = log.odometer;
           if (log.odometer < minFuelOdo) minFuelOdo = log.odometer;
         }
@@ -81,21 +101,45 @@ export default function DashboardScreen() {
       }
     });
 
-    const totalDistance = minOdo !== Infinity && maxOdo > minOdo ? maxOdo - minOdo : 0;
-    
-    const distance30d = minOdo30d !== Infinity && maxOdo30d > minOdo30d ? maxOdo30d - minOdo30d : 0;
+    const totalDistance =
+      minOdo !== Infinity && maxOdo > minOdo ? maxOdo - minOdo : 0;
+
+    const distance30d =
+      minOdo30d !== Infinity && maxOdo30d > minOdo30d
+        ? maxOdo30d - minOdo30d
+        : 0;
 
     // Calculate Average Consumption from all logs
-    const refuelsWithConsumption = vehicleLogs.filter(l => l.type === 'refuel' && l.consumption && l.consumption > 0 && l.consumption < 50);
-    const avgFuelConsumption = refuelsWithConsumption.length > 0 
-      ? refuelsWithConsumption.reduce((sum, l) => sum + (l.consumption || 0), 0) / refuelsWithConsumption.length 
-      : 0;
+    const refuelsWithConsumption = vehicleLogs.filter(
+      (l) =>
+        l.type === "refuel" &&
+        l.consumption &&
+        l.consumption > 0 &&
+        l.consumption < 50,
+    );
+    const avgFuelConsumption =
+      refuelsWithConsumption.length > 0
+        ? refuelsWithConsumption.reduce(
+            (sum, l) => sum + (l.consumption || 0),
+            0,
+          ) / refuelsWithConsumption.length
+        : 0;
 
     // Calculate Cost Per Km from valid intervals
-    const refuelsWithCostPerKm = vehicleLogs.filter(l => l.type === 'refuel' && l.cost_per_km !== undefined && l.cost_per_km > 0 && l.cost_per_km < 5);
-    const avgCostPerKm = refuelsWithCostPerKm.length > 0 
-      ? refuelsWithCostPerKm.reduce((sum, l) => sum + (l.cost_per_km || 0), 0) / refuelsWithCostPerKm.length 
-      : 0;
+    const refuelsWithCostPerKm = vehicleLogs.filter(
+      (l) =>
+        l.type === "refuel" &&
+        l.cost_per_km !== undefined &&
+        l.cost_per_km > 0 &&
+        l.cost_per_km < 5,
+    );
+    const avgCostPerKm =
+      refuelsWithCostPerKm.length > 0
+        ? refuelsWithCostPerKm.reduce(
+            (sum, l) => sum + (l.cost_per_km || 0),
+            0,
+          ) / refuelsWithCostPerKm.length
+        : 0;
 
     return {
       totalDistance,
@@ -104,35 +148,48 @@ export default function DashboardScreen() {
       costPerKm: avgCostPerKm,
       avgL100km: avgFuelConsumption,
       expenses30d,
-      distance30d
+      distance30d,
     };
   }, [vehicleLogs]);
 
   // Evaluate reminders for the selected vehicle
   const evaluatedReminders = useMemo(() => {
     if (selectedVehicleId === null) return [];
-    
-    const vReminders = allReminders.filter(r => r.vehicle_id === selectedVehicleId);
+
+    const vReminders = allReminders.filter(
+      (r) => r.vehicle_id === selectedVehicleId,
+    );
     if (vReminders.length === 0) return [];
 
     // Find current odometer
-    const maxOdo = vehicleLogs.reduce((max, log) => Math.max(max, log.odometer || 0), 0);
+    const maxOdo = vehicleLogs.reduce(
+      (max, log) => Math.max(max, log.odometer || 0),
+      0,
+    );
 
-    return vReminders.map(r => {
+    return vReminders.map((r) => {
       let msgs: string[] = [];
-      let maxStatus = 'ok';
+      let maxStatus = "ok";
 
       if (r.interval_months) {
         msgs.push(`⏳ Every ${r.interval_months} months`);
       }
-      
+
       if (r.interval_kms) {
         // Odometer based
-        const maintenanceLogs = vehicleLogs.filter(l => l.type === 'maintenance');
+        const maintenanceLogs = vehicleLogs.filter(
+          (l) => l.type === "maintenance",
+        );
         let lastServiceOdo = -1;
-        
+
         for (const log of maintenanceLogs) {
-          if (log.raw_event?.service_items?.some((i: any) => i.service_type.toLowerCase().trim() === r.service_type.toLowerCase().trim())) {
+          if (
+            log.raw_event?.service_items?.some(
+              (i: any) =>
+                i.service_type.toLowerCase().trim() ===
+                r.service_type.toLowerCase().trim(),
+            )
+          ) {
             if ((log.odometer || 0) > lastServiceOdo) {
               lastServiceOdo = log.odometer || 0;
             }
@@ -140,18 +197,22 @@ export default function DashboardScreen() {
         }
 
         if (lastServiceOdo === -1) {
-          maxStatus = 'warning';
+          maxStatus = "warning";
           msgs.push(`🛣️ Never performed`);
         } else {
           const targetOdo = lastServiceOdo + (r.interval_kms || 0);
           const warningOdo = targetOdo - (r.notify_before_kms || 0);
 
           if (maxOdo >= targetOdo) {
-            maxStatus = 'overdue';
-            msgs.push(`🛣️ OVERDUE by ${maxOdo - targetOdo} km! (Target: ${targetOdo})`);
+            maxStatus = "overdue";
+            msgs.push(
+              `🛣️ OVERDUE by ${maxOdo - targetOdo} km! (Target: ${targetOdo})`,
+            );
           } else if (maxOdo >= warningOdo) {
-            maxStatus = maxStatus === 'overdue' ? 'overdue' : 'warning';
-            msgs.push(`🛣️ Due in ${targetOdo - maxOdo} km (Target: ${targetOdo})`);
+            maxStatus = maxStatus === "overdue" ? "overdue" : "warning";
+            msgs.push(
+              `🛣️ Due in ${targetOdo - maxOdo} km (Target: ${targetOdo})`,
+            );
           } else {
             msgs.push(`🛣️ ${targetOdo - maxOdo} km remaining`);
           }
@@ -159,35 +220,43 @@ export default function DashboardScreen() {
       }
 
       if (msgs.length === 0) {
-        msgs.push('No interval set');
+        msgs.push("No interval set");
       }
 
-      return { ...r, status: maxStatus, message: msgs.join('\n') };
+      return { ...r, status: maxStatus, message: msgs.join("\n") };
     });
   }, [allReminders, vehicleLogs, selectedVehicleId]);
 
   const handleBackup = async () => {
     try {
-      const Sharing = require('expo-sharing');
-      const { Platform } = require('react-native');
-      const { IOS_LIBRARY_PATH, ANDROID_DATABASE_PATH } = require('../../lib/sqlitePath');
-      
-      const potentialPaths = Platform.OS === 'ios' ? [
-        `${IOS_LIBRARY_PATH}/LocalDatabase/mototommy_v2.sqlite`,
-        `${IOS_LIBRARY_PATH}/mototommy_v2.sqlite`,
-        `${Paths.document.uri}SQLite/mototommy_v2.sqlite`,
-        `${Paths.document.uri}mototommy_v2.sqlite`
-      ] : [
-        `${ANDROID_DATABASE_PATH}/mototommy_v2.sqlite`,
-        `${ANDROID_DATABASE_PATH}mototommy_v2.sqlite`, // in case it ends with slash
-        `${Paths.document.uri}SQLite/mototommy_v2.sqlite`,
-        `${Paths.document.uri}mototommy_v2.sqlite`,
-        `${Paths.document.uri}../databases/mototommy_v2.sqlite`,
-        `file:///data/user/0/com.tbcbcabral.tommymoto/databases/mototommy_v2.sqlite`,
-        `/data/user/0/com.tbcbcabral.tommymoto/databases/mototommy_v2.sqlite`
-      ];
+      const Sharing = require("expo-sharing");
+      const { Platform } = require("react-native");
+      const {
+        IOS_LIBRARY_PATH,
+        ANDROID_DATABASE_PATH,
+      } = require("../../lib/sqlitePath");
+      const { File, Paths } = require("expo-file-system");
 
-      const sanitizePath = (p: string) => p.startsWith('file://') ? p : `file://${p}`;
+      const potentialPaths =
+        Platform.OS === "ios"
+          ? [
+              `${IOS_LIBRARY_PATH}/LocalDatabase/mototommy_v2.sqlite`,
+              `${IOS_LIBRARY_PATH}/mototommy_v2.sqlite`,
+              `${Paths.document.uri}SQLite/mototommy_v2.sqlite`,
+              `${Paths.document.uri}mototommy_v2.sqlite`,
+            ]
+          : [
+              `${ANDROID_DATABASE_PATH}/mototommy_v2.sqlite`,
+              `${ANDROID_DATABASE_PATH}mototommy_v2.sqlite`, // in case it ends with slash
+              `${Paths.document.uri}SQLite/mototommy_v2.sqlite`,
+              `${Paths.document.uri}mototommy_v2.sqlite`,
+              `${Paths.document.uri}../databases/mototommy_v2.sqlite`,
+              `file:///data/user/0/com.tbcbcabral.tommymoto/databases/mototommy_v2.sqlite`,
+              `/data/user/0/com.tbcbcabral.tommymoto/databases/mototommy_v2.sqlite`,
+            ];
+
+      const sanitizePath = (p: string) =>
+        p.startsWith("file://") ? p : `file://${p}`;
 
       let dbPath = null;
       for (const p of potentialPaths) {
@@ -198,30 +267,32 @@ export default function DashboardScreen() {
           break;
         }
       }
-      
+
       if (!dbPath) {
         Alert.alert("Backup Failed", "Local database file not found.");
         return;
       }
-      
+
       if (!(await Sharing.isAvailableAsync())) {
-        Alert.alert("Backup Failed", "Sharing is not available on this device.");
+        Alert.alert(
+          "Backup Failed",
+          "Sharing is not available on this device.",
+        );
         return;
       }
 
       const backupPath = new File(Paths.cache, "mototommy_backup.sqlite");
-      
+
       if (backupPath.exists) {
         backupPath.delete();
       }
-      
+
       await new File(dbPath).copy(backupPath);
-      
+
       await Sharing.shareAsync(backupPath.uri, {
-        dialogTitle: 'Export Mototommy Database',
-        mimeType: 'application/x-sqlite3',
+        dialogTitle: "Export Mototommy Database",
+        mimeType: "application/x-sqlite3",
       });
-      
     } catch (e: any) {
       console.error(e);
       Alert.alert("Backup Failed", `Error: ${e?.message || String(e)}`);
@@ -233,27 +304,41 @@ export default function DashboardScreen() {
       const update = await Updates.checkForUpdateAsync();
       if (update.isAvailable) {
         await Updates.fetchUpdateAsync();
-        Alert.alert('Update downloaded', 'The app will now restart to apply the update.', [
-          { text: 'OK', onPress: () => Updates.reloadAsync() }
-        ]);
+        Alert.alert(
+          "Update downloaded",
+          "The app will now restart to apply the update.",
+          [{ text: "OK", onPress: () => Updates.reloadAsync() }],
+        );
       } else {
-        Alert.alert('No updates', 'You are running the latest version of the app.');
+        Alert.alert(
+          "No updates",
+          "You are running the latest version of the app.",
+        );
       }
     } catch (e) {
-      Alert.alert('Update check failed', 'Could not check for updates. Are you running the app in development mode?');
+      Alert.alert(
+        "Update check failed",
+        "Could not check for updates. Are you running the app in development mode?",
+      );
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.scroll}>
         {vehicles.length > 1 && (
           <View style={styles.selectorContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-              {vehicles.map(v => (
-                <Chip 
-                  key={v.id} 
-                  selected={selectedVehicleId === v.id} 
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.chipScroll}
+            >
+              {vehicles.map((v) => (
+                <Chip
+                  key={v.id}
+                  selected={selectedVehicleId === v.id}
                   onPress={() => setSelectedVehicleId(v.id)}
                   style={styles.chip}
                 >
@@ -264,88 +349,261 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <Title style={styles.header}>Analytics: {selectedVehicleName}</Title>
-        
+        <View
+          style={[
+            styles.header,
+            { flexDirection: "row", alignItems: "center" },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name="chart-bar"
+            size={28}
+            color={theme.colors.onSurface}
+            style={{ marginRight: 8 }}
+          />
+          <Title style={{ marginBottom: 0 }}>
+            Analytics: {selectedVehicleName}
+          </Title>
+        </View>
+
         <View style={styles.statsContainer}>
           <Card style={styles.statCard}>
-            <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Total Distance</Text>
-              <Text variant="titleLarge" style={{ marginTop: 4 }}>{stats.totalDistance > 0 ? formatNumber(stats.totalDistance) : 0} km</Text>
-            </Card.Content>
-          </Card>
-          
-          <Card style={styles.statCard}>
-            <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Total Fuel Spent</Text>
-              <Text variant="titleLarge" style={{ marginTop: 4 }}>€{formatNumber(Math.round(stats.totalExpenses))}</Text>
-            </Card.Content>
-          </Card>
-        </View>
-        <View style={[styles.statsContainer, { marginTop: 12 }]}>
-          <Card style={styles.statCard}>
-            <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Avg L/100km</Text>
-              <Text variant="titleLarge" style={{ marginTop: 4, color: theme.colors.primary }}>
-                {stats.avgL100km > 0 ? stats.avgL100km.toFixed(2) : 'N/A'}
-              </Text>
-            </Card.Content>
-          </Card>
-          
-          <Card style={styles.statCard}>
-            <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Fuel Cost / km</Text>
-              <Text variant="titleLarge" style={{ marginTop: 4, color: theme.colors.error }}>
-                {stats.costPerKm > 0 ? `€${stats.costPerKm.toFixed(2)}` : 'N/A'}
-              </Text>
-            </Card.Content>
-          </Card>
-        </View>
-        
-        <View style={[styles.statsContainer, { marginTop: 12 }]}>
-          <Card style={styles.statCard}>
-            <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Distance (30d)</Text>
-              <Text variant="titleLarge" style={{ marginTop: 4 }}>
-                {stats.distance30d > 0 ? formatNumber(stats.distance30d) : 0} km
-              </Text>
-            </Card.Content>
-          </Card>
-          
-          <Card style={styles.statCard}>
-            <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Fuel Spent (30d)</Text>
-              <Text variant="titleLarge" style={{ marginTop: 4 }}>
-                €{formatNumber(Math.round(stats.expenses30d))}
-              </Text>
+            <Card.Content
+              style={{ flexDirection: "row", alignItems: "center" }}
+            >
+              <View style={{ flex: 2, alignItems: "center" }}>
+                <Text
+                  variant="titleSmall"
+                  style={[
+                    styles.statLabel,
+                    { color: theme.dark ? "#ffffff" : "#1a3251" },
+                  ]}
+                >
+                  Total Distance
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-end",
+                    marginTop: 4,
+                  }}
+                >
+                  <Text style={styles.statNumber}>
+                    {stats.totalDistance > 0
+                      ? formatNumber(stats.totalDistance)
+                      : 0}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.statUnit,
+                      { color: theme.dark ? "#ffffff" : "#1a3251" },
+                    ]}
+                  >
+                    km
+                  </Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {selectedVehicle?.profile_photo_uri ? (
+                  <Image
+                    source={{ uri: selectedVehicle.profile_photo_uri }}
+                    style={{ width: 64, height: 64, borderRadius: 32 }}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 32,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: theme.colors.surfaceVariant,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="motorbike"
+                      size={32}
+                      color={theme.colors.onSurfaceVariant}
+                    />
+                  </View>
+                )}
+              </View>
             </Card.Content>
           </Card>
         </View>
 
         <View style={[styles.statsContainer, { marginTop: 12 }]}>
           <Card style={styles.statCard}>
-            <Card.Content style={{ alignItems: 'center' }}>
-              <Text variant="labelMedium">Total Maint. Spent</Text>
-              <Text variant="titleLarge" style={{ marginTop: 4 }}>
-                €{formatNumber(Math.round(stats.totalMaintenanceExpenses))}
+            <Card.Content style={{ alignItems: "center" }}>
+              <Text
+                variant="titleSmall"
+                style={[
+                  styles.statLabel,
+                  { color: theme.dark ? "#ffffff" : "#1a3251" },
+                ]}
+              >
+                Avg L/100km
               </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  marginTop: 4,
+                }}
+              >
+                <Text style={styles.statNumber}>
+                  {stats.avgL100km > 0 ? stats.avgL100km.toFixed(2) : "N/A"}
+                </Text>
+              </View>
             </Card.Content>
           </Card>
-          
-          <View style={[styles.statCard, { backgroundColor: 'transparent', elevation: 0 }]} />
+
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: "center" }}>
+              <Text
+                variant="titleSmall"
+                style={[
+                  styles.statLabel,
+                  { color: theme.dark ? "#ffffff" : "#1a3251" },
+                ]}
+              >
+                Fuel Cost / km
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  marginTop: 4,
+                }}
+              >
+                <Text style={styles.statNumber}>
+                  {stats.costPerKm > 0 ? stats.costPerKm.toFixed(2) : "N/A"}
+                </Text>
+                {stats.costPerKm > 0 && (
+                  <Text
+                    style={[
+                      styles.statUnit,
+                      { color: theme.dark ? "#ffffff" : "#1a3251" },
+                    ]}
+                  >
+                    €
+                  </Text>
+                )}
+              </View>
+            </Card.Content>
+          </Card>
         </View>
 
-        <Title style={[styles.header, { marginTop: 24 }]}>Reminders</Title>
+        <View style={[styles.statsContainer, { marginTop: 12 }]}>
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: "center" }}>
+              <Text
+                variant="titleSmall"
+                style={[
+                  styles.statLabel,
+                  { color: theme.dark ? "#ffffff" : "#1a3251" },
+                ]}
+              >
+                Total Maint. Spent
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  marginTop: 4,
+                }}
+              >
+                <Text style={styles.statNumber}>
+                  {formatNumber(Math.round(stats.totalMaintenanceExpenses))}
+                </Text>
+                <Text
+                  style={[
+                    styles.statUnit,
+                    { color: theme.dark ? "#ffffff" : "#1a3251" },
+                  ]}
+                >
+                  €
+                </Text>
+              </View>
+            </Card.Content>
+          </Card>
+
+          <Card style={styles.statCard}>
+            <Card.Content style={{ alignItems: "center" }}>
+              <Text
+                variant="titleSmall"
+                style={[
+                  styles.statLabel,
+                  { color: theme.dark ? "#ffffff" : "#1a3251" },
+                ]}
+              >
+                Total Fuel Spent
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  marginTop: 4,
+                }}
+              >
+                <Text style={styles.statNumber}>
+                  {formatNumber(Math.round(stats.totalExpenses))}
+                </Text>
+                <Text
+                  style={[
+                    styles.statUnit,
+                    { color: theme.dark ? "#ffffff" : "#1a3251" },
+                  ]}
+                >
+                  €
+                </Text>
+              </View>
+            </Card.Content>
+          </Card>
+        </View>
+
+        <View
+          style={[
+            styles.header,
+            { marginTop: 24, flexDirection: "row", alignItems: "center" },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name="bell-outline"
+            size={28}
+            color={theme.colors.onSurface}
+            style={{ marginRight: 8 }}
+          />
+          <Title style={{ marginBottom: 0 }}>Reminders</Title>
+        </View>
         <Card style={styles.reminderCard}>
           <Card.Content>
             {evaluatedReminders.length === 0 ? (
-              <Paragraph>No reminders set. Go to the Reminders tab to set some!</Paragraph>
+              <Paragraph>
+                No reminders set. Go to the Reminders tab to set some!
+              </Paragraph>
             ) : (
-              evaluatedReminders.map(r => (
+              evaluatedReminders.map((r) => (
                 <View key={r.id} style={{ marginBottom: 12 }}>
-                  <Text variant="titleMedium" style={{ 
-                    color: r.status === 'overdue' ? theme.colors.error : 
-                           r.status === 'warning' ? '#f59e0b' : theme.colors.onSurface 
-                  }}>
+                  <Text
+                    variant="titleMedium"
+                    style={{
+                      color:
+                        r.status === "overdue"
+                          ? theme.colors.error
+                          : r.status === "warning"
+                            ? "#f59e0b"
+                            : theme.colors.onSurface,
+                    }}
+                  >
                     {r.service_type}
                   </Text>
                   <Text variant="bodyMedium" style={{ opacity: 0.7 }}>
@@ -357,19 +615,19 @@ export default function DashboardScreen() {
           </Card.Content>
         </Card>
 
-        <Button 
-          mode="outlined" 
-          icon="database-export" 
-          style={{ marginTop: 24 }} 
+        <Button
+          mode="outlined"
+          icon="database-export"
+          style={{ marginTop: 24 }}
           onPress={handleBackup}
         >
           Export Cloud Data Backup
         </Button>
 
-        <Button 
-          mode="contained-tonal" 
-          icon="update" 
-          style={{ marginTop: 12, marginBottom: 80 }} 
+        <Button
+          mode="contained-tonal"
+          icon="update"
+          style={{ marginTop: 12, marginBottom: 80 }}
           onPress={handleUpdateApp}
         >
           Check for App Updates
@@ -379,27 +637,27 @@ export default function DashboardScreen() {
       <FAB.Group
         open={fabOpen}
         visible
-        icon={fabOpen ? 'close' : 'plus'}
+        icon={fabOpen ? "close" : "plus"}
         actions={[
           {
-            icon: 'gas-station',
-            label: 'Add Refuel',
-            onPress: () => router.push('/add-refuel'),
+            icon: "gas-station",
+            label: "Add Refuel",
+            onPress: () => router.push("/add-refuel"),
           },
           {
-            icon: 'wrench',
-            label: 'Add Maintenance',
-            onPress: () => router.push('/add-maintenance'),
+            icon: "wrench",
+            label: "Add Maintenance",
+            onPress: () => router.push("/add-maintenance"),
           },
           {
-            icon: 'shopping',
-            label: 'Add Accessory',
-            onPress: () => router.push('/add-accessory'),
+            icon: "shopping",
+            label: "Add Accessory",
+            onPress: () => router.push("/add-accessory"),
           },
           {
-            icon: 'cash',
-            label: 'Add Expense',
-            onPress: () => router.push('/add-expense'),
+            icon: "cash",
+            label: "Add Expense",
+            onPress: () => router.push("/add-expense"),
           },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
@@ -433,18 +691,33 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 8,
   },
   statCard: {
     flex: 1,
   },
+  statLabel: {
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
+  statNumber: {
+    fontSize: 38,
+    fontWeight: "300",
+    color: "#f36750",
+  },
+  statUnit: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 4,
+    marginBottom: 6,
+  },
   reminderCard: {
     marginBottom: 16,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     margin: 16,
     right: 0,
     bottom: 0,
