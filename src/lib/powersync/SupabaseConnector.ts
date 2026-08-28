@@ -3,10 +3,12 @@ import { supabase } from "../supabase";
 
 export const createSupabaseConnector = (): PowerSyncBackendConnector => ({
   fetchCredentials: async () => {
+    alert("fetchCredentials called!");
     // Get the active session from Supabase
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
+      alert("No active session found in fetchCredentials!");
       throw new Error('No active Supabase session found');
     }
 

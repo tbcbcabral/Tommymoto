@@ -23,7 +23,9 @@ export const setupPowerSync = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       try {
+        alert("Calling connect(connector) from Init!");
         await powerSync.connect(connector);
+        alert("Connect from Init finished!");
       } catch (e: any) {
         alert("Init Connect Error: " + e.message);
       }
@@ -33,7 +35,9 @@ export const setupPowerSync = async () => {
       if (session) {
         if (!powerSync.connected) {
           try {
+            alert("Calling connect(connector) from AuthStateChange!");
             await powerSync.connect(connector);
+            alert("Connect from Auth finished!");
           } catch (e: any) {
             alert("Auth Connect Error: " + e.message);
           }
