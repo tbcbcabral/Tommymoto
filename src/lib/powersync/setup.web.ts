@@ -10,7 +10,7 @@ export const powerSync = new PowerSyncDatabase({
     worker: (typeof __DEV__ !== 'undefined' && __DEV__) ? '/@powersync/worker.js' : '/Tommymoto/@powersync/worker.js'
   },
   flags: {
-    enableMultiTabs: false // Disable multi-tab sync to avoid SharedWorker complexity for now
+    enableMultiTabs: false
   }
 });
 
@@ -18,27 +18,38 @@ export const setupPowerSync = async () => {
   try {
     await powerSync.init();
     
-    // Connect to Supabase
     const connector = new SupabaseConnector();
     
-    // Check if we have an active session right now
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      await powerSync.connect(connector);
+      try {
+        await powerSync.connect(connector);
+      } catch (e: any) {
+        alert("Init Connect Error: " + e.message);
+      }
     }
 
-    // Listen to Supabase auth changes to connect/disconnect dynamically
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         if (!powerSync.connected) {
           try {
             await powerSync.connect(connector);
           } catch (e: any) {
-            alert("PowerSync Connect Error: " + e.message);
+            alert("Auth Connect Error: " + e.message);
           }
         }
       } else {
         await powerSync.disconnectAndClear();
+      }
+    });
+
+    powerSync.registerListener({
+      errorEvent: (error) => {
+        console.error("PowerSync async error:", error);
+        alert("PowerSync Async Error: " + error.message);
+      },
+      statusChanged: (status) => {
+        console.log("PowerSync Status:", status);
       }
     });
 
