@@ -1,6 +1,6 @@
 import { PowerSyncDatabase } from '@powersync/web';
 import { AppSchema } from './AppSchema';
-import { SupabaseConnector } from './SupabaseConnector';
+import { createSupabaseConnector } from './SupabaseConnector';
 import { supabase } from '../supabase';
 
 export const powerSync = new PowerSyncDatabase({
@@ -18,7 +18,7 @@ export const setupPowerSync = async () => {
   try {
     await powerSync.init();
     
-    const connector = new SupabaseConnector();
+    const connector = createSupabaseConnector();
     
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {

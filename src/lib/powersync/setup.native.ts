@@ -1,6 +1,6 @@
 import { PowerSyncDatabase } from '@powersync/react-native';
 import { AppSchema } from './AppSchema';
-import { SupabaseConnector } from './SupabaseConnector';
+import { createSupabaseConnector } from './SupabaseConnector';
 import { supabase } from '../supabase';
 
 export const powerSync = new PowerSyncDatabase({
@@ -15,7 +15,7 @@ export const setupPowerSync = async () => {
     await powerSync.init();
     
     // Connect to Supabase
-    const connector = new SupabaseConnector();
+    const connector = createSupabaseConnector();
     
     // Check if we have an active session right now
     const { data: { session } } = await supabase.auth.getSession();

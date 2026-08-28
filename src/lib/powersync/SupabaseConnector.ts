@@ -1,8 +1,8 @@
 import { PowerSyncBackendConnector, AbstractPowerSyncDatabase, UpdateType } from "@powersync/common";
 import { supabase } from "../supabase";
 
-export class SupabaseConnector implements PowerSyncBackendConnector {
-  async fetchCredentials() {
+export const createSupabaseConnector = (): PowerSyncBackendConnector => ({
+  fetchCredentials: async () => {
     // Get the active session from Supabase
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -14,9 +14,9 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
       endpoint: 'https://6a7deeca53f73afec8a95107.powersync.journeyapps.com',
       token: session.access_token
     };
-  }
+  },
 
-  async uploadData(database: AbstractPowerSyncDatabase) {
+  uploadData: async (database: AbstractPowerSyncDatabase) => {
     const transaction = await database.getNextCrudTransaction();
 
     if (!transaction) {
@@ -52,4 +52,4 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
       // We do not complete the transaction here so it can retry later
     }
   }
-}
+});
