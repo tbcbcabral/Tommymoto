@@ -31,14 +31,19 @@ export const setupPowerSync = async () => {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         if (!powerSync.connected) {
-          await powerSync.connect(connector);
+          try {
+            await powerSync.connect(connector);
+          } catch (e: any) {
+            alert("PowerSync Connect Error: " + e.message);
+          }
         }
       } else {
         await powerSync.disconnectAndClear();
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error setting up PowerSync:", error);
+    alert("PowerSync Setup Error: " + error.message);
   }
 };
