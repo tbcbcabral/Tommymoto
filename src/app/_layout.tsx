@@ -12,8 +12,33 @@ import { powerSync, setupPowerSync } from '../lib/powersync/setup';
 
 SplashScreen.preventAutoHideAsync();
 
+let globalLogs: string[] = [];
+const originalLog = console.log;
+const originalWarn = console.warn;
+const originalError = console.error;
+
+console.log = (...args) => {
+  globalLogs = [...globalLogs, "LOG: " + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(" ")].slice(-10);
+  originalLog.apply(console, args);
+};
+console.warn = (...args) => {
+  globalLogs = [...globalLogs, "WARN: " + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(" ")].slice(-10);
+  originalWarn.apply(console, args);
+};
+console.error = (...args) => {
+  globalLogs = [...globalLogs, "ERR: " + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(" ")].slice(-10);
+  originalError.apply(console, args);
+};
+
 function DebugOverlay() {
   const status = useStatus();
+  const [logs, setLogs] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const interval = setInterval(() => setLogs([...globalLogs]), 500);
+    return () => clearInterval(interval);
+  }, []);
+
   if (Platform.OS !== 'web') return null;
   return (
     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, zIndex: 9999 }}>
@@ -21,6 +46,11 @@ function DebugOverlay() {
       <Text style={{ color: 'white', fontSize: 10 }}>Syncing: {status.dataFlowStatus.downloading ? 'Downloading' : 'Idle'} | {status.dataFlowStatus.uploading ? 'Uploading' : 'Idle'}</Text>
       {status.dataFlowStatus.error && <Text style={{ color: 'red', fontSize: 10 }}>Error: {String(status.dataFlowStatus.error)}</Text>}
       <Text style={{ color: 'white', fontSize: 10 }}>Has Synced: {status.hasSynced ? 'Yes' : 'No'}</Text>
+      <View style={{ marginTop: 5, borderTopWidth: 1, borderColor: '#333', paddingTop: 5, maxHeight: 150 }}>
+        {logs.map((l, i) => (
+          <Text key={i} style={{ color: l.startsWith('ERR') ? 'red' : l.startsWith('WARN') ? 'yellow' : 'white', fontSize: 9 }}>{l}</Text>
+        ))}
+      </View>
     </View>
   );
 }
