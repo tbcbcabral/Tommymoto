@@ -19,16 +19,28 @@ export const setupPowerSync = async () => {
     
     // Check if we have an active session right now
     const { data: { session } } = await supabase.auth.getSession();
+    
+    let isConnecting = false;
+    const safeConnect = async () => {
+      if (isConnecting || powerSync.connected) return;
+      isConnecting = true;
+      try {
+        await powerSync.connect(connector);
+      } catch (e: any) {
+        console.error("Connect Error:", e.message);
+      } finally {
+        isConnecting = false;
+      }
+    };
+
     if (session) {
-      await powerSync.connect(connector);
+      await safeConnect();
     }
 
     // Listen to Supabase auth changes to connect/disconnect dynamically
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        if (!powerSync.connected) {
-          await powerSync.connect(connector);
-        }
+        await safeConnect();
       } else {
         await powerSync.disconnectAndClear();
       }

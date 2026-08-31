@@ -21,27 +21,27 @@ export const setupPowerSync = async () => {
     const connector = createSupabaseConnector();
     
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
+    
+    let isConnecting = false;
+    const safeConnect = async () => {
+      if (isConnecting || powerSync.connected) return;
+      isConnecting = true;
       try {
-        alert("Calling connect(connector) from Init!");
         await powerSync.connect(connector);
-        alert("Connect from Init finished!");
       } catch (e: any) {
-        alert("Init Connect Error: " + e.message);
+        alert("Connect Error: " + e.message);
+      } finally {
+        isConnecting = false;
       }
+    };
+
+    if (session) {
+      await safeConnect();
     }
 
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        if (!powerSync.connected) {
-          try {
-            alert("Calling connect(connector) from AuthStateChange!");
-            await powerSync.connect(connector);
-            alert("Connect from Auth finished!");
-          } catch (e: any) {
-            alert("Auth Connect Error: " + e.message);
-          }
-        }
+        await safeConnect();
       } else {
         await powerSync.disconnectAndClear();
       }
