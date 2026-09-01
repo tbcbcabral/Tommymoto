@@ -6,8 +6,11 @@ import { supabase } from '../supabase';
 export const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
   database: {
-    dbFilename: 'mototommy_v2.sqlite'
-  }
+    dbFilename: 'mototommy_v2.sqlite',
+  },
+  logger: {
+    log: (event) => console.log(`PS [${event.level}]: ${event.message}`, event.error || '')
+  },
 });
 
 export const setupPowerSync = async () => {

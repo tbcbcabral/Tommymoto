@@ -9,6 +9,9 @@ export const powerSync = new PowerSyncDatabase({
     dbFilename: 'mototommy_v2.sqlite',
     worker: (typeof __DEV__ !== 'undefined' && __DEV__) ? '/@powersync/worker.js' : '/Tommymoto/@powersync/worker.js'
   },
+  logger: {
+    log: (event) => console.log(`PS [${event.level}]: ${event.message}`, event.error || '')
+  },
   flags: {
     enableMultiTabs: false
   }
