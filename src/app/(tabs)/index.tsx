@@ -16,9 +16,11 @@ import * as Updates from "expo-updates";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useVehicles, useAllLogs, useReminders } from "@/hooks/useData";
 import { formatNumber } from "../../lib/utils";
+import { usePowerSync } from "@powersync/react";
 
 export default function DashboardScreen() {
   const theme = useTheme();
+  const powerSync = usePowerSync();
   const [fabOpen, setFabOpen] = useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
     null,
@@ -271,6 +273,12 @@ export default function DashboardScreen() {
       if (!dbPath) {
         Alert.alert("Backup Failed", "Local database file not found.");
         return;
+      }
+
+      try {
+        await powerSync.execute('PRAGMA wal_checkpoint(TRUNCATE)');
+      } catch (e) {
+        console.warn('Failed to checkpoint WAL before backup', e);
       }
 
       if (!(await Sharing.isAvailableAsync())) {
