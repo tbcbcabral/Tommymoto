@@ -25,39 +25,40 @@ export const setupPowerSync = async () => {
     
     const { data: { session } } = await supabase.auth.getSession();
     
-    let hasAttemptedConnect = false;
-    const safeConnect = async () => {
-      if (hasAttemptedConnect || powerSync.connected) return;
-      hasAttemptedConnect = true;
-      try {
-        console.log("Calling powerSync.connect");
-        await powerSync.connect(connector);
-        console.log("powerSync.connect finished");
-      } catch (e: any) {
-        console.error("Connect Error: " + e.message);
-        hasAttemptedConnect = false; // allow retry if it failed synchronously
-      }
-    };
-
-    if (session) {
-      await safeConnect();
-    }
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        await safeConnect();
-      } else {
-        hasAttemptedConnect = false;
-        await powerSync.disconnectAndClear();
-      }
-    });
-
     powerSync.registerListener({
       errorEvent: (error) => {
         console.error("PowerSync async error:", error);
       },
       statusChanged: (status) => {
-        console.log("PowerSync Status:", status);
+        console.log("PowerSync Status changed:", status);
+      }
+    });
+
+    let connectionPromise: Promise<void> | null = null;
+    const safeConnect = async () => {
+      if (powerSync.connected || connectionPromise) return;
+      console.log("Starting new connection...");
+      connectionPromise = powerSync.connect(connector);
+      try {
+        await connectionPromise;
+        console.log("powerSync.connect resolved successfully");
+      } catch (e: any) {
+        console.error("Connect Error:", e.message);
+      } finally {
+        connectionPromise = null;
+      }
+    };
+
+    if (session) {
+      safeConnect(); // don't await, let it run in background
+    }
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        safeConnect();
+      } else {
+        connectionPromise = null;
+        await powerSync.disconnectAndClear();
       }
     });
 
