@@ -30,9 +30,11 @@ export const setupPowerSync = async () => {
       if (isConnecting || powerSync.connected) return;
       isConnecting = true;
       try {
+        console.log("Calling powerSync.connect");
         await powerSync.connect(connector);
+        console.log("powerSync.connect finished");
       } catch (e: any) {
-        alert("Connect Error: " + e.message);
+        console.error("Connect Error: " + e.message);
       } finally {
         isConnecting = false;
       }
@@ -53,7 +55,6 @@ export const setupPowerSync = async () => {
     powerSync.registerListener({
       errorEvent: (error) => {
         console.error("PowerSync async error:", error);
-        alert("PowerSync Async Error: " + error.message);
       },
       statusChanged: (status) => {
         console.log("PowerSync Status:", status);
@@ -62,6 +63,5 @@ export const setupPowerSync = async () => {
 
   } catch (error: any) {
     console.error("Error setting up PowerSync:", error);
-    alert("PowerSync Setup Error: " + error.message);
   }
 };
