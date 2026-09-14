@@ -25,18 +25,17 @@ export const setupPowerSync = async () => {
     
     const { data: { session } } = await supabase.auth.getSession();
     
-    let isConnecting = false;
+    let hasAttemptedConnect = false;
     const safeConnect = async () => {
-      if (isConnecting || powerSync.connected) return;
-      isConnecting = true;
+      if (hasAttemptedConnect || powerSync.connected) return;
+      hasAttemptedConnect = true;
       try {
         console.log("Calling powerSync.connect");
         await powerSync.connect(connector);
         console.log("powerSync.connect finished");
       } catch (e: any) {
         console.error("Connect Error: " + e.message);
-      } finally {
-        isConnecting = false;
+        hasAttemptedConnect = false; // allow retry if it failed synchronously
       }
     };
 
@@ -48,6 +47,7 @@ export const setupPowerSync = async () => {
       if (session) {
         await safeConnect();
       } else {
+        hasAttemptedConnect = false;
         await powerSync.disconnectAndClear();
       }
     });
