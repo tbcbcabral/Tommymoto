@@ -8,7 +8,7 @@ import { addAccessory, getVehicles, Vehicle, getAccessory, updateAccessory, getU
 
 export default function AddAccessoryScreen() {
   const theme = useTheme();
-  const { logId } = useLocalSearchParams();
+  const { logId, vehicleId } = useLocalSearchParams<{ logId?: string; vehicleId?: string }>();
   const isEditing = !!logId;
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -40,13 +40,15 @@ export default function AddAccessoryScreen() {
           router.back();
         }
       } else if (data.length > 0) {
-        const def = data.find(v => v.is_default);
-        setSelectedVehicleId((def || data[0]).id);
+        const targetVehicle = (vehicleId && data.find(v => v.id === vehicleId))
+          || data.find(v => v.is_default)
+          || data[0];
+        setSelectedVehicleId(targetVehicle.id);
       }
       getUniqueValues('accessories', 'shop').then(setShops);
     };
     load();
-  }, [logId, isEditing]);
+  }, [logId, isEditing, vehicleId]);
 
   const handleSave = async () => {
     try {
@@ -116,7 +118,12 @@ export default function AddAccessoryScreen() {
       keyboardShouldPersistTaps="handled">
       <View style={styles.form}>
         <Text style={styles.label}>Select vehicle</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.chipScroll}
+          contentContainerStyle={styles.chipScrollContent}
+        >
           {vehicles.map(v => (
             <Chip 
               key={v.id} 
@@ -134,7 +141,12 @@ export default function AddAccessoryScreen() {
         <TextInput label="Price paid (€) *" value={price} onChangeText={(t) => setPrice(t.replace(/,/g, '.').replace(/[^0-9.]/g, ''))} keyboardType="numbers-and-punctuation" style={styles.input} />
         <TextInput label="Shop name" value={shop} onChangeText={setShop} style={styles.input} />
         {shops.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            style={styles.chipScroll}
+            contentContainerStyle={styles.chipScrollContent}
+          >
             {shops.map((s) => (
               <Chip key={s} onPress={() => setShop(s)} style={styles.chip} compact>{s}</Chip>
             ))}
@@ -168,11 +180,16 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   chipScroll: {
-    flexDirection: 'row',
+    flexGrow: 0,
     marginBottom: 12,
+  },
+  chipScrollContent: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
   chip: {
     marginRight: 8,
+    alignSelf: 'flex-start',
   },
   saveBtn: {
     marginTop: 16,

@@ -650,22 +650,34 @@ export default function DashboardScreen() {
           {
             icon: "gas-station",
             label: "Add Refuel",
-            onPress: () => router.push("/add-refuel"),
+            onPress: () => router.push({
+              pathname: "/add-refuel",
+              params: selectedVehicleId ? { vehicleId: selectedVehicleId } : undefined,
+            }),
           },
           {
             icon: "wrench",
             label: "Add Maintenance",
-            onPress: () => router.push("/add-maintenance"),
+            onPress: () => router.push({
+              pathname: "/add-maintenance",
+              params: selectedVehicleId ? { vehicleId: selectedVehicleId } : undefined,
+            }),
           },
           {
             icon: "shopping",
             label: "Add Accessory",
-            onPress: () => router.push("/add-accessory"),
+            onPress: () => router.push({
+              pathname: "/add-accessory",
+              params: selectedVehicleId ? { vehicleId: selectedVehicleId } : undefined,
+            }),
           },
           {
             icon: "cash",
             label: "Add Expense",
-            onPress: () => router.push("/add-expense"),
+            onPress: () => router.push({
+              pathname: "/add-expense",
+              params: selectedVehicleId ? { vehicleId: selectedVehicleId } : undefined,
+            }),
           },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}

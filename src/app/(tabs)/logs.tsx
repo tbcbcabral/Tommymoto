@@ -19,6 +19,11 @@ export default function LogsScreen() {
   const vehicles = useVehicles();
   const logs = useAllLogs();
 
+  const selectedVehicleObj = useMemo(() => {
+    if (filterVehicle === 'all') return null;
+    return vehicles.find(v => (v.alias || `${v.make} ${v.model}`) === filterVehicle) || null;
+  }, [vehicles, filterVehicle]);
+
   const handleDelete = (id: string) => {
     Alert.alert('Delete Log', 'Are you sure you want to delete this log?', [
       { text: 'Cancel', style: 'cancel' },
@@ -232,22 +237,34 @@ export default function LogsScreen() {
           {
             icon: 'gas-station',
             label: 'Add Refuel',
-            onPress: () => router.push('/add-refuel'),
+            onPress: () => router.push({
+              pathname: '/add-refuel',
+              params: selectedVehicleObj ? { vehicleId: selectedVehicleObj.id } : undefined,
+            }),
           },
           {
             icon: 'wrench',
             label: 'Add Maintenance',
-            onPress: () => router.push('/add-maintenance'),
+            onPress: () => router.push({
+              pathname: '/add-maintenance',
+              params: selectedVehicleObj ? { vehicleId: selectedVehicleObj.id } : undefined,
+            }),
           },
           {
             icon: 'shopping',
             label: 'Add Accessory',
-            onPress: () => router.push('/add-accessory'),
+            onPress: () => router.push({
+              pathname: '/add-accessory',
+              params: selectedVehicleObj ? { vehicleId: selectedVehicleObj.id } : undefined,
+            }),
           },
           {
             icon: 'cash',
             label: 'Add Expense',
-            onPress: () => router.push('/add-expense'),
+            onPress: () => router.push({
+              pathname: '/add-expense',
+              params: selectedVehicleObj ? { vehicleId: selectedVehicleObj.id } : undefined,
+            }),
           },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}

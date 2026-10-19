@@ -9,7 +9,7 @@ import { formatNumber } from '../lib/utils';
 
 export default function AddRefuelScreen() {
   const theme = useTheme();
-  const { logId } = useLocalSearchParams();
+  const { logId, vehicleId } = useLocalSearchParams<{ logId?: string; vehicleId?: string }>();
   const isEditing = !!logId;
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -35,7 +35,7 @@ export default function AddRefuelScreen() {
           setSelectedVehicleId(event.vehicle_id);
           setDate(event.date);
           setLiters(event.liters.toString());
-          setFuelType(event.fuel_type || '');
+          setFuelType(event.fuel_type || 'Petrol');
           setStationBrand(event.petrol_station_brand || '');
           setTotalPrice(event.total_price.toString());
           setOdometer(event.odometer.toString());
@@ -46,14 +46,27 @@ export default function AddRefuelScreen() {
           router.back();
         }
       } else if (data.length > 0) {
-        const def = data.find(v => v.is_default);
-        setSelectedVehicleId((def || data[0]).id);
-        setFuelType((def || data[0]).default_fuel_type || '');
+        const targetVehicle = (vehicleId && data.find(v => v.id === vehicleId))
+          || data.find(v => v.is_default)
+          || data[0];
+        setSelectedVehicleId(targetVehicle.id);
+        if (targetVehicle.default_fuel_type) {
+          setFuelType(targetVehicle.default_fuel_type);
+        } else {
+          setFuelType('Petrol');
+        }
       }
       getUniqueValues('refueling_events', 'petrol_station_brand').then(setBrands);
     };
     load();
-  }, [logId, isEditing]);
+  }, [logId, isEditing, vehicleId]);
+
+  const handleSelectVehicle = (v: Vehicle) => {
+    setSelectedVehicleId(v.id.toString());
+    if (v.default_fuel_type) {
+      setFuelType(v.default_fuel_type);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -120,12 +133,17 @@ export default function AddRefuelScreen() {
       extraScrollHeight={100} 
       keyboardShouldPersistTaps="handled">
       <Text style={styles.label}>Select Vehicle</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.chipScroll}
+        contentContainerStyle={styles.chipScrollContent}
+      >
         {vehicles.map(v => (
           <Chip 
             key={v.id} 
             selected={selectedVehicleId === v.id}
-            onPress={() => setSelectedVehicleId(v.id.toString())}
+            onPress={() => handleSelectVehicle(v)}
             style={styles.chip}
           >
             {v.alias || v.model}
@@ -150,7 +168,12 @@ export default function AddRefuelScreen() {
       />
       <TextInput label="Petrol station brand" value={stationBrand} onChangeText={setStationBrand} style={styles.input} />
       {brands.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.chipScroll}
+          contentContainerStyle={styles.chipScrollContent}
+        >
           {brands.map((b) => (
             <Chip key={b} onPress={() => setStationBrand(b)} style={styles.chip} compact>{b}</Chip>
           ))}
@@ -187,11 +210,16 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   chipScroll: {
-    flexDirection: 'row',
+    flexGrow: 0,
     marginBottom: 12,
+  },
+  chipScrollContent: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
   chip: {
     marginRight: 8,
+    alignSelf: 'flex-start',
   },
   switchContainer: {
     flexDirection: 'row',

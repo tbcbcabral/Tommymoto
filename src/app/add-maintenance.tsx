@@ -10,7 +10,7 @@ import { scheduleMaintenanceReminder } from '../lib/notifications';
 
 export default function AddMaintenanceScreen() {
   const theme = useTheme();
-  const { logId } = useLocalSearchParams();
+  const { logId, vehicleId } = useLocalSearchParams<{ logId?: string; vehicleId?: string }>();
   const isEditing = !!logId;
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -56,8 +56,10 @@ export default function AddMaintenanceScreen() {
           router.back();
         }
       } else if (data.length > 0) {
-        const def = data.find(v => v.is_default);
-        setSelectedVehicleId((def || data[0]).id);
+        const targetVehicle = (vehicleId && data.find(v => v.id === vehicleId))
+          || data.find(v => v.is_default)
+          || data[0];
+        setSelectedVehicleId(targetVehicle.id);
       }
       getUniqueValues('maintenance_events', 'garage').then(setGarages);
       getUniqueValues('service_items', 'service_type').then(dbServices => {
@@ -176,7 +178,12 @@ export default function AddMaintenanceScreen() {
       extraScrollHeight={100} 
       keyboardShouldPersistTaps="handled">
       <Text style={styles.label}>Select Vehicle</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.chipScroll}
+        contentContainerStyle={styles.chipScrollContent}
+      >
         {vehicles.map(v => (
           <Chip 
             key={v.id} 
@@ -193,7 +200,12 @@ export default function AddMaintenanceScreen() {
       <TextInput label="Odometer (km) *" value={odometer} onChangeText={(t) => setOdometer(t.replace(/\D/g, ''))} keyboardType="number-pad" style={styles.input} />
       <TextInput label="Garage name" value={garage} onChangeText={setGarage} style={styles.input} />
       {garages.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.chipScroll}
+          contentContainerStyle={styles.chipScrollContent}
+        >
           {garages.map((g) => (
             <Chip key={g} onPress={() => setGarage(g)} style={styles.chip} compact>{g}</Chip>
           ))}
@@ -311,15 +323,20 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   chipScroll: {
-    flexDirection: 'row',
+    flexGrow: 0,
     marginBottom: 12,
   },
+  chipScrollContent: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
   serviceChipScroll: {
-    flexDirection: 'row',
+    flexGrow: 0,
     marginTop: 4,
   },
   chip: {
     marginRight: 8,
+    alignSelf: 'flex-start',
   },
   itemWrapper: {
     marginBottom: 16,

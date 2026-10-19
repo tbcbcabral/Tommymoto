@@ -8,7 +8,7 @@ import { getVehicles, Vehicle, addExpense, getExpense, updateExpense } from '../
 
 export default function AddExpenseScreen() {
   const theme = useTheme();
-  const { logId } = useLocalSearchParams();
+  const { logId, vehicleId } = useLocalSearchParams<{ logId?: string; vehicleId?: string }>();
   
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
@@ -33,12 +33,14 @@ export default function AddExpenseScreen() {
         setNotes(event.notes || '');
         setReceiptUri(event.receipt_image_uri || '');
       } else if (data.length > 0) {
-        const def = data.find(v => v.is_default);
-        setSelectedVehicleId((def || data[0]).id);
+        const targetVehicle = (vehicleId && data.find(v => v.id === vehicleId))
+          || data.find(v => v.is_default)
+          || data[0];
+        setSelectedVehicleId(targetVehicle.id);
       }
     };
     load();
-  }, [logId]);
+  }, [logId, vehicleId]);
 
   const handleSave = async () => {
     try {
@@ -99,7 +101,12 @@ export default function AddExpenseScreen() {
       extraScrollHeight={100} 
       keyboardShouldPersistTaps="handled">
       <Text style={styles.label}>Select Vehicle</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.chipScroll}
+        contentContainerStyle={styles.chipScrollContent}
+      >
         {vehicles.map(v => (
           <Chip 
             key={v.id} 
@@ -115,7 +122,12 @@ export default function AddExpenseScreen() {
       <TextInput label="Date (YYYY-MM-DD) *" value={date} onChangeText={setDate} style={styles.input} />
       
       <Text style={styles.label}>Expense Type</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.chipScroll}
+        contentContainerStyle={styles.chipScrollContent}
+      >
         {EXPENSE_TYPES.map((t) => (
           <Chip 
             key={t} 
@@ -161,11 +173,16 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   chipScroll: {
-    flexDirection: 'row',
+    flexGrow: 0,
     marginBottom: 16,
+  },
+  chipScrollContent: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
   chip: {
     marginRight: 8,
+    alignSelf: 'flex-start',
   },
   saveBtn: {
     marginTop: 20,

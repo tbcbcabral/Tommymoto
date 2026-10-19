@@ -41,3 +41,10 @@ example
 # generated native folders
 /ios
 /android
+
+# Backups & local scratch
+*.sqlite
+supabase_backup_*.json
+test-results/
+check_*.js
+test-*.js
