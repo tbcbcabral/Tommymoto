@@ -1,5 +1,6 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Updates from 'expo-updates';
 import { useColorScheme } from 'react-native';
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
 import { PaperProvider, MD3DarkTheme, MD3LightTheme } from 'react-native-paper';
@@ -20,6 +21,18 @@ export default function RootLayout() {
 
   useEffect(() => {
     registerForPushNotificationsAsync();
+
+    // Check for OTA updates automatically in production
+    if (!__DEV__) {
+      Updates.checkForUpdateAsync()
+        .then(async (update) => {
+          if (update.isAvailable) {
+            await Updates.fetchUpdateAsync();
+            await Updates.reloadAsync();
+          }
+        })
+        .catch(() => {});
+    }
 
     // Initialize local database & check session in parallel
     Promise.all([

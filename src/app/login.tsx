@@ -152,7 +152,7 @@ export default function Login() {
         </Button>
       </View>
       <View style={[styles.verticallySpaced, styles.mt10]}>
-        <Button mode="text" onPress={handleContinueOffline}>
+        <Button mode="contained-tonal" icon="database" onPress={handleContinueOffline}>
           Entrar em Modo Local (Offline)
         </Button>
       </View>
