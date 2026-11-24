@@ -107,12 +107,12 @@ export default function Login() {
             placeholder="email@address.com"
             autoCapitalize="none"
             keyboardType="email-address"
-            textContentType="username"
-            autoComplete="username"
+            textContentType="emailAddress"
+            autoComplete="email"
             importantForAutofill="yes"
-            nativeID="username"
-            id="username"
-            accessibilityLabel="Email ou Nome de utilizador"
+            nativeID="email"
+            id="email"
+            accessibilityLabel="Email"
           />
         </View>
         <View style={styles.verticallySpaced}>
@@ -131,12 +131,12 @@ export default function Login() {
             placeholder="Password"
             autoCapitalize="none"
             textContentType="password"
-            autoComplete="current-password"
+            autoComplete="password"
             autoCorrect={false}
             importantForAutofill="yes"
             nativeID="password"
             id="password"
-            accessibilityLabel="Palavra-passe"
+            accessibilityLabel="Password"
           />
         </View>
       </View>
