@@ -3,14 +3,29 @@ import { AppSchema } from './AppSchema';
 import { createSupabaseConnector } from './SupabaseConnector';
 import { supabase } from '../supabase';
 
+const getWorkerPath = () => {
+  if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    return '/@powersync/worker.js';
+  }
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/Tommymoto')) {
+    return '/Tommymoto/@powersync/worker.js';
+  }
+  return '/@powersync/worker.js';
+};
+
 export const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
   database: {
     dbFilename: 'mototommy_v2.sqlite',
-    worker: (typeof __DEV__ !== 'undefined' && __DEV__) ? '/@powersync/worker.js' : '/Tommymoto/@powersync/worker.js'
+    worker: getWorkerPath()
   },
   logger: {
-    log: (event) => console.log(`PS [${event.level}]: ${event.message}`, event.error || '')
+    log: (event: any) => {
+      const isWarnOrErr = typeof event.level === 'number' ? event.level >= 40 : event.level === 'warn' || event.level === 'error';
+      if (isWarnOrErr) {
+        console.warn(`PS [${event.level}]: ${event.message}`, event.error || '');
+      }
+    }
   },
   flags: {
     enableMultiTabs: false
@@ -19,50 +34,45 @@ export const powerSync = new PowerSyncDatabase({
 
 export const setupPowerSync = async () => {
   try {
+    // 1. Initialize local web SQLite/OPFS/IDB database
     await powerSync.init();
     
     const connector = createSupabaseConnector();
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    powerSync.registerListener({
-      errorEvent: (error) => {
-        console.error("PowerSync async error:", error);
-      },
-      statusChanged: (status) => {
-        console.log("PowerSync Status changed:", status);
-      }
-    });
 
     let connectionPromise: Promise<void> | null = null;
     const safeConnect = async () => {
       if (powerSync.connected || connectionPromise) return;
-      console.log("Starting new connection...");
       connectionPromise = powerSync.connect(connector);
       try {
         await connectionPromise;
-        console.log("powerSync.connect resolved successfully");
       } catch (e: any) {
-        console.error("Connect Error:", e.message);
+        console.warn("PowerSync Web Connect (background):", e.message);
       } finally {
         connectionPromise = null;
       }
     };
 
-    if (session) {
-      safeConnect(); // don't await, let it run in background
-    }
+    // 2. Connect in background if session exists
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session) {
+        safeConnect();
+      }
+    }).catch(() => {
+      // Offline mode: local database remains queryable
+    });
 
+    // 3. Listen to auth changes without wiping local database
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         safeConnect();
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         connectionPromise = null;
-        await powerSync.disconnectAndClear();
+        // Disconnect sync stream on sign-out, but keep local data intact!
+        await powerSync.disconnect();
       }
     });
 
   } catch (error: any) {
-    console.error("Error setting up PowerSync:", error);
+    console.error("Error setting up PowerSync Web:", error);
   }
 };

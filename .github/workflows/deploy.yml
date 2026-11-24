@@ -39,6 +39,8 @@ jobs:
         run: |
           cp dist/index.html dist/404.html
           touch dist/.nojekyll
+          mkdir -p dist/Tommymoto
+          cp -r dist/@powersync dist/Tommymoto/@powersync
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

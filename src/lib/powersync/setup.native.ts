@@ -9,19 +9,21 @@ export const powerSync = new PowerSyncDatabase({
     dbFilename: 'mototommy_v2.sqlite',
   },
   logger: {
-    log: (event) => console.log(`PS [${event.level}]: ${event.message}`, event.error || '')
+    log: (event: any) => {
+      const isWarnOrErr = typeof event.level === 'number' ? event.level >= 40 : event.level === 'warn' || event.level === 'error';
+      if (isWarnOrErr) {
+        console.warn(`PS [${event.level}]: ${event.message}`, event.error || '');
+      }
+    }
   },
 });
 
 export const setupPowerSync = async () => {
   try {
+    // 1. Initialize local SQLite database (instant & offline)
     await powerSync.init();
     
-    // Connect to Supabase
     const connector = createSupabaseConnector();
-    
-    // Check if we have an active session right now
-    const { data: { session } } = await supabase.auth.getSession();
     
     let isConnecting = false;
     const safeConnect = async () => {
@@ -30,22 +32,28 @@ export const setupPowerSync = async () => {
       try {
         await powerSync.connect(connector);
       } catch (e: any) {
-        console.error("Connect Error:", e.message);
+        console.warn("PowerSync Connect (background):", e.message);
       } finally {
         isConnecting = false;
       }
     };
 
-    if (session) {
-      await safeConnect();
-    }
+    // 2. Try to connect in background if session exists
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session) {
+        safeConnect();
+      }
+    }).catch(() => {
+      // Offline: keep local database accessible
+    });
 
-    // Listen to Supabase auth changes to connect/disconnect dynamically
+    // 3. Listen to Supabase auth changes without wiping local database
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        await safeConnect();
-      } else {
-        await powerSync.disconnectAndClear();
+        safeConnect();
+      } else if (event === 'SIGNED_OUT') {
+        // Disconnect sync stream on sign-out, but keep local data intact!
+        await powerSync.disconnect();
       }
     });
 

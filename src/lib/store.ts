@@ -6,6 +6,8 @@ interface AuthState {
   setSession: (session: Session | null) => void;
   isInitialized: boolean;
   setInitialized: (initialized: boolean) => void;
+  isOfflineMode: boolean;
+  setOfflineMode: (offline: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -13,4 +15,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   setSession: (session) => set({ session }),
   isInitialized: false,
   setInitialized: (initialized) => set({ isInitialized: initialized }),
+  isOfflineMode: false,
+  setOfflineMode: (offline) => set({ isOfflineMode: offline }),
 }));

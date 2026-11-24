@@ -1,0 +1,33 @@
+name: Supabase and PowerSync Keep-Alive
+
+on:
+  schedule:
+    # Run every 3 days at 05:00 UTC to prevent Supabase 7-day inactivity pause
+    - cron: '0 5 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Ping Supabase & PowerSync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST & Auth API
+        run: |
+          echo "Pinging Supabase REST endpoint..."
+          REST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: sb_publishable_KWpP2f43FRCQsoGN6LFHAQ_Lg5X_21v" \
+            "https://mubjklmroxoooywwjkel.supabase.co/rest/v1/vehicles?select=id&limit=1" || true)
+          echo "Supabase REST HTTP response: $REST_STATUS"
+
+          echo "Pinging Supabase Auth Health..."
+          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: sb_publishable_KWpP2f43FRCQsoGN6LFHAQ_Lg5X_21v" \
+            "https://mubjklmroxoooywwjkel.supabase.co/auth/v1/health" || true)
+          echo "Supabase Auth HTTP response: $AUTH_STATUS"
+
+          echo "Pinging PowerSync Cloud Instance..."
+          POWERSYNC_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://6a7deeca53f73afec8a95107.powersync.journeyapps.com" || true)
+          echo "PowerSync HTTP response: $POWERSYNC_STATUS"
+
+          echo "Keep-alive ping completed successfully."
