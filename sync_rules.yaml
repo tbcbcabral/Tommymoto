@@ -1,0 +1,13 @@
+config:
+  edition: 3
+streams:
+  user_data:
+    auto_subscribe: true
+    queries:
+      - SELECT * FROM vehicles WHERE user_id = auth.user_id()
+      - SELECT refueling_events.* FROM refueling_events INNER JOIN vehicles ON refueling_events.vehicle_id = vehicles.id WHERE vehicles.user_id = auth.user_id()
+      - SELECT maintenance_events.* FROM maintenance_events INNER JOIN vehicles ON maintenance_events.vehicle_id = vehicles.id WHERE vehicles.user_id = auth.user_id()
+      - SELECT service_items.* FROM service_items INNER JOIN maintenance_events ON service_items.maintenance_event_id = maintenance_events.id INNER JOIN vehicles ON maintenance_events.vehicle_id = vehicles.id WHERE vehicles.user_id = auth.user_id()
+      - SELECT accessories.* FROM accessories INNER JOIN vehicles ON accessories.vehicle_id = vehicles.id WHERE vehicles.user_id = auth.user_id()
+      - SELECT expenses.* FROM expenses INNER JOIN vehicles ON expenses.vehicle_id = vehicles.id WHERE vehicles.user_id = auth.user_id()
+      - SELECT reminders.* FROM reminders INNER JOIN vehicles ON reminders.vehicle_id = vehicles.id WHERE vehicles.user_id = auth.user_id()
