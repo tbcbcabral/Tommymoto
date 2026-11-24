@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Button, TextInput, Text, Surface } from 'react-native-paper';
 import { useAuthStore } from '../lib/store';
 import { useRouter } from 'expo-router';
+import { syncDirectFromSupabase } from '../lib/directSync';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -52,6 +53,8 @@ export default function Login() {
 
       if (error) {
         Alert.alert('Erro de Ligação', getFriendlyErrorMessage(error));
+      } else {
+        await syncDirectFromSupabase().catch(() => {});
       }
     } catch (err: any) {
       Alert.alert('Erro de Ligação', getFriendlyErrorMessage(err));

@@ -17,11 +17,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useVehicles, useAllLogs, useReminders } from "@/hooks/useData";
 import { formatNumber } from "../../lib/utils";
 import { usePowerSync } from "@powersync/react";
+import { syncDirectFromSupabase } from "../../lib/directSync";
 
 export default function DashboardScreen() {
   const theme = useTheme();
   const powerSync = usePowerSync();
   const [fabOpen, setFabOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(
     null,
   );
@@ -29,6 +31,12 @@ export default function DashboardScreen() {
   const vehicles = useVehicles();
   const logs = useAllLogs();
   const allReminders = useReminders();
+
+  useFocusEffect(
+    useCallback(() => {
+      syncDirectFromSupabase().catch(() => {});
+    }, [])
+  );
 
   useEffect(() => {
     if (vehicles.length > 0 && selectedVehicleId === null) {
@@ -331,11 +339,41 @@ export default function DashboardScreen() {
     }
   };
 
+  const handleManualSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await syncDirectFromSupabase();
+      if (res.success) {
+        Alert.alert("Sincronização Concluída", `${res.count} registos sincronizados da nuvem.`);
+      } else {
+        Alert.alert("Aviso de Sincronização", res.error || "Não foi possível descarregar dados.");
+      }
+    } catch (e: any) {
+      Alert.alert("Erro", e?.message || "Falha na sincronização.");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.scroll}>
+        {vehicles.length === 0 && (
+          <Card style={{ marginHorizontal: 16, marginTop: 16, marginBottom: 8, elevation: 2 }}>
+            <Card.Content style={{ alignItems: "center", paddingVertical: 20 }}>
+              <MaterialCommunityIcons name="cloud-sync" size={48} color={theme.colors.primary} />
+              <Title style={{ textAlign: "center", marginTop: 12 }}>Nenhum Veículo Local</Title>
+              <Paragraph style={{ textAlign: "center", marginBottom: 16 }}>
+                Se já tem veículos guardados no Supabase, clique abaixo para descarregar todos os dados da sua conta.
+              </Paragraph>
+              <Button mode="contained" icon="cloud-download" loading={syncing} onPress={handleManualSync}>
+                Descarregar Dados da Nuvem
+              </Button>
+            </Card.Content>
+          </Card>
+        )}
         {vehicles.length > 1 && (
           <View style={styles.selectorContainer}>
             <ScrollView
@@ -624,9 +662,19 @@ export default function DashboardScreen() {
         </Card>
 
         <Button
+          mode="contained-tonal"
+          icon="cloud-sync"
+          loading={syncing}
+          style={{ marginTop: 24 }}
+          onPress={handleManualSync}
+        >
+          Sincronizar com Nuvem (Supabase)
+        </Button>
+
+        <Button
           mode="outlined"
           icon="database-export"
-          style={{ marginTop: 24 }}
+          style={{ marginTop: 12 }}
           onPress={handleBackup}
         >
           Export Cloud Data Backup

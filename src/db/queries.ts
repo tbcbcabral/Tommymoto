@@ -35,6 +35,23 @@ export const addVehicle = async (vehicle: Omit<Vehicle, 'id' | 'is_archived' | '
       vehicle.default_fuel_type || '', vehicle.profile_photo_uri || '', 0
     ]
   );
+
+  if (userId) {
+    supabase.from('vehicles').upsert({
+      id,
+      user_id: userId,
+      make: vehicle.make || '',
+      model: vehicle.model || '',
+      license_plate: vehicle.license_plate || null,
+      year: vehicle.year,
+      alias: vehicle.alias || null,
+      is_default: Boolean(vehicle.is_default),
+      is_archived: false,
+      default_fuel_type: vehicle.default_fuel_type || null,
+      profile_photo_uri: vehicle.profile_photo_uri || null
+    }).then(() => {}).catch(() => {});
+  }
+
   return id;
 };
 
@@ -56,6 +73,12 @@ export const updateVehicle = async (id: string, vehicle: Partial<Omit<Vehicle, '
   params.push(id);
   
   await powerSync.execute(`UPDATE vehicles SET ${updates.join(', ')} WHERE id = ?`, params);
+
+  const supabaseUpdates: any = { ...vehicle };
+  if ('is_default' in supabaseUpdates) {
+    supabaseUpdates.is_default = Boolean(supabaseUpdates.is_default);
+  }
+  supabase.from('vehicles').update(supabaseUpdates).eq('id', id).then(() => {}).catch(() => {});
 };
 
 export const getVehicles = async (): Promise<Vehicle[]> => {
@@ -77,14 +100,17 @@ export const setDefaultVehicle = async (id: string) => {
 
 export const archiveVehicle = async (id: string) => {
   await powerSync.execute('UPDATE vehicles SET is_archived = 1, is_default = 0 WHERE id = ?', [id]);
+  supabase.from('vehicles').update({ is_archived: true, is_default: false }).eq('id', id).then(() => {}).catch(() => {});
 };
 
 export const restoreVehicle = async (id: string) => {
   await powerSync.execute('UPDATE vehicles SET is_archived = 0 WHERE id = ?', [id]);
+  supabase.from('vehicles').update({ is_archived: false }).eq('id', id).then(() => {}).catch(() => {});
 };
 
 export const permanentlyDeleteVehicle = async (id: string) => {
   await powerSync.execute('DELETE FROM vehicles WHERE id = ?', [id]);
+  supabase.from('vehicles').delete().eq('id', id).then(() => {}).catch(() => {});
 };
 
 // --- Refueling ---
@@ -112,6 +138,19 @@ export const addRefuelingEvent = async (event: Omit<RefuelingEvent, 'id'>) => {
       event.is_full_tank ?? 1
     ]
   );
+
+  supabase.from('refueling_events').upsert({
+    id,
+    vehicle_id: event.vehicle_id,
+    date: event.date,
+    liters: event.liters,
+    fuel_type: event.fuel_type || null,
+    petrol_station_brand: event.petrol_station_brand || null,
+    total_price: event.total_price,
+    odometer: event.odometer,
+    is_full_tank: Boolean(event.is_full_tank ?? 1)
+  }).then(() => {}).catch(() => {});
+
   return id;
 };
 
@@ -124,6 +163,17 @@ export const updateRefuelingEvent = async (id: string, event: Omit<RefuelingEven
     `UPDATE refueling_events SET vehicle_id=?, date=?, liters=?, fuel_type=?, petrol_station_brand=?, total_price=?, odometer=?, is_full_tank=? WHERE id=?`,
     [event.vehicle_id, event.date, event.liters, event.fuel_type || '', event.petrol_station_brand || '', event.total_price, event.odometer, event.is_full_tank ?? 1, id]
   );
+
+  supabase.from('refueling_events').update({
+    vehicle_id: event.vehicle_id,
+    date: event.date,
+    liters: event.liters,
+    fuel_type: event.fuel_type || null,
+    petrol_station_brand: event.petrol_station_brand || null,
+    total_price: event.total_price,
+    odometer: event.odometer,
+    is_full_tank: Boolean(event.is_full_tank ?? 1)
+  }).eq('id', id).then(() => {}).catch(() => {});
 };
 
 // --- Maintenance ---
@@ -252,15 +302,20 @@ export const getAllLogs = async (): Promise<LogEntry[]> => {
 
 export const deleteLog = async (logId: string) => {
   if (logId.startsWith('refuel-')) {
-    await powerSync.execute('DELETE FROM refueling_events WHERE id = ?', [logId.replace('refuel-', '')]);
+    const id = logId.replace('refuel-', '');
+    await powerSync.execute('DELETE FROM refueling_events WHERE id = ?', [id]);
+    supabase.from('refueling_events').delete().eq('id', id).then(() => {}).catch(() => {});
   } else if (logId.startsWith('maint-')) {
     const id = logId.replace('maint-', '');
     await powerSync.writeTransaction(async (tx) => {
       await tx.execute('DELETE FROM service_items WHERE maintenance_event_id = ?', [id]);
       await tx.execute('DELETE FROM maintenance_events WHERE id = ?', [id]);
     });
+    supabase.from('maintenance_events').delete().eq('id', id).then(() => {}).catch(() => {});
   } else if (logId.startsWith('acc-')) {
-    await powerSync.execute('DELETE FROM accessories WHERE id = ?', [logId.replace('acc-', '')]);
+    const id = logId.replace('acc-', '');
+    await powerSync.execute('DELETE FROM accessories WHERE id = ?', [id]);
+    supabase.from('accessories').delete().eq('id', id).then(() => {}).catch(() => {});
   }
 };
 
@@ -327,6 +382,7 @@ export const deleteReminder = async (id: string) => {
     });
   }
   await powerSync.execute('DELETE FROM reminders WHERE id = ?', [id]);
+  supabase.from('reminders').delete().eq('id', id).then(() => {}).catch(() => {});
 };
 
 // --- Expenses ---
@@ -346,6 +402,10 @@ export const addExpense = async (expense: Omit<Expense, 'id'>) => {
     `INSERT INTO expenses (id, vehicle_id, expense_type, price, date, notes) VALUES (?, ?, ?, ?, ?, ?)`,
     [id, expense.vehicle_id, expense.expense_type, expense.price, expense.date, expense.notes || '']
   );
+  supabase.from('expenses').upsert({
+    id, vehicle_id: expense.vehicle_id, expense_type: expense.expense_type,
+    price: expense.price, date: expense.date, notes: expense.notes || null
+  }).then(() => {}).catch(() => {});
   return id;
 };
 
@@ -358,6 +418,10 @@ export const updateExpense = async (id: string, expense: Omit<Expense, 'id'>) =>
     `UPDATE expenses SET vehicle_id=?, expense_type=?, price=?, date=?, notes=? WHERE id=?`,
     [expense.vehicle_id, expense.expense_type, expense.price, expense.date, expense.notes || '', id]
   );
+  supabase.from('expenses').update({
+    vehicle_id: expense.vehicle_id, expense_type: expense.expense_type,
+    price: expense.price, date: expense.date, notes: expense.notes || null
+  }).eq('id', id).then(() => {}).catch(() => {});
 };
 
 export const getExpenses = async (vehicleId?: string): Promise<Expense[]> => {
@@ -369,4 +433,5 @@ export const getExpenses = async (vehicleId?: string): Promise<Expense[]> => {
 
 export const deleteExpense = async (id: string) => {
   await powerSync.execute('DELETE FROM expenses WHERE id = ?', [id]);
+  supabase.from('expenses').delete().eq('id', id).then(() => {}).catch(() => {});
 };

@@ -2,6 +2,7 @@ import { PowerSyncDatabase } from '@powersync/web';
 import { AppSchema } from './AppSchema';
 import { createSupabaseConnector } from './SupabaseConnector';
 import { supabase } from '../supabase';
+import { syncDirectFromSupabase } from '../directSync';
 
 const getWorkerPath = () => {
   if (typeof __DEV__ !== 'undefined' && __DEV__) {
@@ -52,9 +53,10 @@ export const setupPowerSync = async () => {
       }
     };
 
-    // 2. Connect in background if session exists
+    // 2. Connect in background and run direct Supabase sync if session exists
     supabase.auth.getSession().then(({ data }) => {
       if (data?.session) {
+        syncDirectFromSupabase().catch(() => {});
         safeConnect();
       }
     }).catch(() => {
@@ -64,6 +66,7 @@ export const setupPowerSync = async () => {
     // 3. Listen to auth changes without wiping local database
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
+        syncDirectFromSupabase().catch(() => {});
         safeConnect();
       } else if (event === 'SIGNED_OUT') {
         connectionPromise = null;

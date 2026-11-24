@@ -2,6 +2,7 @@ import { PowerSyncDatabase } from '@powersync/react-native';
 import { AppSchema } from './AppSchema';
 import { createSupabaseConnector } from './SupabaseConnector';
 import { supabase } from '../supabase';
+import { syncDirectFromSupabase } from '../directSync';
 
 export const powerSync = new PowerSyncDatabase({
   schema: AppSchema,
@@ -38,9 +39,10 @@ export const setupPowerSync = async () => {
       }
     };
 
-    // 2. Try to connect in background if session exists
+    // 2. Try to connect in background and run direct Supabase sync if session exists
     supabase.auth.getSession().then(({ data }) => {
       if (data?.session) {
+        syncDirectFromSupabase().catch(() => {});
         safeConnect();
       }
     }).catch(() => {
@@ -50,6 +52,7 @@ export const setupPowerSync = async () => {
     // 3. Listen to Supabase auth changes without wiping local database
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
+        syncDirectFromSupabase().catch(() => {});
         safeConnect();
       } else if (event === 'SIGNED_OUT') {
         // Disconnect sync stream on sign-out, but keep local data intact!
