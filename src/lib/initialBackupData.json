@@ -1,0 +1,1602 @@
+{
+  "user_id": "fa6dada5-fd66-45b4-b3ae-9c28b0b7bab5",
+  "tables": {
+    "vehicles": [
+      {
+        "id": "a1bbaaf2-15ac-4ceb-b044-80290f2e3247",
+        "user_id": "fa6dada5-fd66-45b4-b3ae-9c28b0b7bab5",
+        "make": "Honda",
+        "model": "XR125",
+        "year": 2004,
+        "license_plate": null,
+        "vin": null,
+        "is_default": false,
+        "is_archived": true,
+        "default_fuel_type": "Petrol",
+        "alias": "XR125",
+        "profile_photo_uri": null
+      },
+      {
+        "id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "user_id": "fa6dada5-fd66-45b4-b3ae-9c28b0b7bab5",
+        "make": "Honda",
+        "model": "XL600V",
+        "year": 1992,
+        "license_plate": "LX-77-61",
+        "vin": null,
+        "is_default": true,
+        "is_archived": false,
+        "default_fuel_type": "Petrol",
+        "alias": "Transalp",
+        "profile_photo_uri": "file:///data/user/0/com.tbcbcabral.tommymoto/cache/ImagePicker/5524f89c-98cb-46ee-a2b8-21f6c0ce1add.jpeg"
+      },
+      {
+        "id": "e6c9eee3-b9ba-41cf-bf9c-58bf209025e7",
+        "user_id": "fa6dada5-fd66-45b4-b3ae-9c28b0b7bab5",
+        "make": "Skoda",
+        "model": "Octavia Break 1.9 TDI SportLine",
+        "year": 2009,
+        "license_plate": "30-HX-68",
+        "vin": null,
+        "is_default": false,
+        "is_archived": false,
+        "default_fuel_type": "Diesel",
+        "alias": "Skoda",
+        "profile_photo_uri": "file:///data/user/0/com.tbcbcabral.tommymoto/cache/ImagePicker/5a619fa3-87e7-43bb-b53d-03c112486094.jpeg"
+      }
+    ],
+    "refueling_events": [
+      {
+        "id": "cc4fc093-4256-447f-a613-fe19ed999a8c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-07-24 19:04:26",
+        "liters": 13.343,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 23.47,
+        "odometer": 105411,
+        "is_full_tank": true
+      },
+      {
+        "id": "3c52a76a-a5e8-4a06-9a3a-adf258f58b58",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-07-09 16:54:44",
+        "liters": 14.089,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 23.67,
+        "odometer": 105214,
+        "is_full_tank": true
+      },
+      {
+        "id": "a25bdd08-ec25-4a3a-960b-900a84a01a09",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-07-01 09:56:38",
+        "liters": 12.291,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 22.16,
+        "odometer": 105010,
+        "is_full_tank": true
+      },
+      {
+        "id": "a71ba271-d5eb-4b28-af0f-42f934c4fb2e",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-06-23 16:16:17",
+        "liters": 12.191,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 20.03,
+        "odometer": 104827,
+        "is_full_tank": true
+      },
+      {
+        "id": "2eb1007d-e2b4-4d94-a220-119e2b0d3df3",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-05-29 15:20:26",
+        "liters": 12.241,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 24.03,
+        "odometer": 104650,
+        "is_full_tank": true
+      },
+      {
+        "id": "69538fc1-204c-42e5-a616-a01193c19dbf",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-05-19 12:25:03",
+        "liters": 12.99,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Galp",
+        "total_price": 22.2,
+        "odometer": 104475,
+        "is_full_tank": true
+      },
+      {
+        "id": "30936915-2aa4-4c3d-a665-b2516e6810e5",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-05-03 09:44:07",
+        "liters": 10.901,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Galp",
+        "total_price": 21.9,
+        "odometer": 104282,
+        "is_full_tank": true
+      },
+      {
+        "id": "fd6cbc16-011b-46ff-ab9f-a0ff2aaf1ed0",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-04-09 14:53:02",
+        "liters": 14.22,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Galp",
+        "total_price": 28.64,
+        "odometer": 103916,
+        "is_full_tank": true
+      },
+      {
+        "id": "60835299-16b4-4ee1-bfe8-0284378d46a6",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-03-20 17:40:01",
+        "liters": 15.628,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Galp",
+        "total_price": 31.13,
+        "odometer": 103710,
+        "is_full_tank": true
+      },
+      {
+        "id": "bdf6b7af-9cc6-49da-a17e-2538b18a08c1",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-03-05 15:24:46",
+        "liters": 13.724,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 22.04,
+        "odometer": 103484,
+        "is_full_tank": true
+      },
+      {
+        "id": "cb7792fd-4d6d-4208-82e4-1b31827421cd",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-02-20 11:28:15",
+        "liters": 12.852,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 17.17,
+        "odometer": 103292,
+        "is_full_tank": true
+      },
+      {
+        "id": "a9d94b1b-88e9-42c5-a147-dd11993a48b9",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-01-08 11:51:52",
+        "liters": 13.189,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 21.01,
+        "odometer": 103106,
+        "is_full_tank": true
+      },
+      {
+        "id": "23b737b3-47ff-4453-b907-76357ce0b2cb",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-12-31 18:30:37",
+        "liters": 13.632,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Galp",
+        "total_price": 23.91,
+        "odometer": 102916,
+        "is_full_tank": true
+      },
+      {
+        "id": "69b5bd26-e3dc-40d4-ae14-86241d7015f8",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-12-21 15:20:06",
+        "liters": 14.252,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 25.069,
+        "odometer": 102727,
+        "is_full_tank": true
+      },
+      {
+        "id": "a09b5970-76f2-44a9-bc89-e5382f865b6b",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-12-15 08:52:01",
+        "liters": 15.389,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 25.9,
+        "odometer": 102515,
+        "is_full_tank": true
+      },
+      {
+        "id": "f4c2e748-cd0c-4c82-a320-bca9ba5023f3",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-11-28 14:22:57",
+        "liters": 14.688,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 24.5,
+        "odometer": 102288,
+        "is_full_tank": true
+      },
+      {
+        "id": "68c2e99c-c2d5-4728-9905-92299ce48c7c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-11-12 18:28:40",
+        "liters": 14.58,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 24.83,
+        "odometer": 102063,
+        "is_full_tank": true
+      },
+      {
+        "id": "fdec2964-ac89-49ea-bf8e-085ab0722772",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-10-29 19:00:25",
+        "liters": 15.566,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 24.75,
+        "odometer": 101847,
+        "is_full_tank": true
+      },
+      {
+        "id": "e9a4c899-935b-47c0-bf8f-b21e68098cda",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-10-17 18:43:10",
+        "liters": 14.012,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 20.71,
+        "odometer": 101607,
+        "is_full_tank": true
+      },
+      {
+        "id": "681e260c-e0ad-492b-bc28-49aa65426b9c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-10-09 18:08:15",
+        "liters": 11.143,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 12.38,
+        "odometer": 101409,
+        "is_full_tank": true
+      },
+      {
+        "id": "cb3f31ec-f135-40e4-9064-a69b45bb1304",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-10-02 17:49:51",
+        "liters": 15.042,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 24.91,
+        "odometer": 101243,
+        "is_full_tank": true
+      },
+      {
+        "id": "b377d299-812e-4c24-adaf-7d2b0c8ee0bb",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-09-22 13:11:24",
+        "liters": 12.929,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 21.54,
+        "odometer": 101034,
+        "is_full_tank": true
+      },
+      {
+        "id": "fd1386b0-3401-4047-b71e-d886ec83e9bf",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-09-12 17:48:48",
+        "liters": 13.998,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 23.32,
+        "odometer": 100858,
+        "is_full_tank": true
+      },
+      {
+        "id": "4f91e89a-4691-4671-877f-3b4d57a5791c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-09-03 19:18:43",
+        "liters": 14.754,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 24.27,
+        "odometer": 100652,
+        "is_full_tank": true
+      },
+      {
+        "id": "e4e3131f-8fc8-4843-97c9-f9b25280d01e",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-08-21 14:53:36",
+        "liters": 13.032,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 21.45,
+        "odometer": 100444,
+        "is_full_tank": false
+      },
+      {
+        "id": "0ca78954-5206-4340-8ad9-77babd5b288c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-08-16 15:10:01",
+        "liters": 10.502,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 18.63,
+        "odometer": 100174,
+        "is_full_tank": true
+      },
+      {
+        "id": "b5bbf240-8860-4104-b2ec-a79a7e9df26b",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-07-31 17:11:54",
+        "liters": 14.04,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 22.9,
+        "odometer": 100018,
+        "is_full_tank": true
+      },
+      {
+        "id": "b2647ff5-fdbe-4779-810c-13e45ee6abf3",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-07-21 20:28:56",
+        "liters": 15.577,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Repsol",
+        "total_price": 27.79,
+        "odometer": 99793,
+        "is_full_tank": false
+      },
+      {
+        "id": "36915727-0e8f-4603-8bb6-43f9e0da7e52",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-07-10 17:41:34",
+        "liters": 12.733,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 20.64,
+        "odometer": 99579,
+        "is_full_tank": false
+      },
+      {
+        "id": "ab36a577-ebb3-4ac5-91ff-0c5d1fb2da3d",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-06-26 18:04:32",
+        "liters": 13.397,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 22.4,
+        "odometer": 99399,
+        "is_full_tank": false
+      },
+      {
+        "id": "08c6a1b0-e707-4afa-ba4c-ac108bb8688d",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-06-11 19:44:30",
+        "liters": 13.244,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 20.33,
+        "odometer": 99206,
+        "is_full_tank": false
+      },
+      {
+        "id": "42cc86f1-0a00-4f64-b334-d9b3875a6e58",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-05-30 15:45:46",
+        "liters": 15.821,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 26.88,
+        "odometer": 99017,
+        "is_full_tank": false
+      },
+      {
+        "id": "6bce3712-fe18-457c-b1da-6489ba52f8a3",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-05-21 13:09:04",
+        "liters": 12.23,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 20.07,
+        "odometer": 98785,
+        "is_full_tank": false
+      },
+      {
+        "id": "f67bd7c9-8daf-4025-a375-97dee7a2753a",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-05-03 11:56:06",
+        "liters": 14.479,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 24.02,
+        "odometer": 98398,
+        "is_full_tank": false
+      },
+      {
+        "id": "6c86c56f-b382-41ee-b789-3943a74fe1e3",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-04-27 21:23:29",
+        "liters": 7.753,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Repsol",
+        "total_price": 9.9,
+        "odometer": 97791,
+        "is_full_tank": true
+      },
+      {
+        "id": "ae793148-d97a-4445-a23c-3abd6e0297db",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-04-27 20:03:04",
+        "liters": 12.293,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Repsol",
+        "total_price": 18.992,
+        "odometer": 97680,
+        "is_full_tank": true
+      },
+      {
+        "id": "78a32d8d-b848-4a5b-861d-4e48aa671f8b",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-04-27 00:47:35",
+        "liters": 7.997,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Repsol",
+        "total_price": 11.82,
+        "odometer": 97470,
+        "is_full_tank": false
+      },
+      {
+        "id": "7ad743ff-9dd0-4e56-87eb-30a45ed97265",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-10-30 17:57:27",
+        "liters": 11.9,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Repsol",
+        "total_price": 19.326,
+        "odometer": 39778,
+        "is_full_tank": true
+      },
+      {
+        "id": "29c8e782-ec5c-4e70-81ad-2b4ee2a8af14",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-07-11 17:39:24",
+        "liters": 9.872,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 16.18,
+        "odometer": 37336,
+        "is_full_tank": true
+      },
+      {
+        "id": "9e917532-6ab5-4c35-9871-25fe3afd0dac",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-03-19 18:47:44",
+        "liters": 11,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Casa",
+        "total_price": 16.544,
+        "odometer": 35533,
+        "is_full_tank": true
+      },
+      {
+        "id": "93c8ec25-ccfa-45a3-8550-146013ce266c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-03-15 09:59:05",
+        "liters": 2.99,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 4.497,
+        "odometer": 35456,
+        "is_full_tank": false
+      },
+      {
+        "id": "15de9d58-7ff8-499b-ae57-93b93a6816f4",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-01-30 17:06:16",
+        "liters": 4.028,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "",
+        "total_price": 6.4,
+        "odometer": 34988,
+        "is_full_tank": false
+      },
+      {
+        "id": "d755010d-7daa-4d45-9b48-490d3fcd90e1",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-01-15 18:50:31",
+        "liters": 11,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 16.819,
+        "odometer": 34400,
+        "is_full_tank": true
+      },
+      {
+        "id": "40ca8e31-0018-4596-b433-2a268c7659b6",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2017-12-23 13:55:44",
+        "liters": 4.029,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Regua",
+        "total_price": 6.16,
+        "odometer": 34058,
+        "is_full_tank": true
+      },
+      {
+        "id": "563e60d2-f59a-4c7d-93d4-a3c8a32aa352",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2017-12-22 18:08:32",
+        "liters": 4.761,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 7.28,
+        "odometer": 33916,
+        "is_full_tank": true
+      },
+      {
+        "id": "bf836daf-506a-4446-9a96-772c1e5285a0",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2017-12-12 12:23:01",
+        "liters": 10.93,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 16.712,
+        "odometer": 33768,
+        "is_full_tank": true
+      },
+      {
+        "id": "d5fc310f-44c6-49f0-9c8c-f697ce0576bc",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2017-11-28 19:09:48",
+        "liters": 11.36,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "BP",
+        "total_price": 17.37,
+        "odometer": 33432,
+        "is_full_tank": true
+      },
+      {
+        "id": "105a7596-d612-4abc-b563-869ff0ed1cca",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-08-14",
+        "liters": 12.37,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "CEPSA",
+        "total_price": 22.55,
+        "odometer": 105807,
+        "is_full_tank": false
+      },
+      {
+        "id": "8db69912-8fb9-4299-933a-2934183bfc6a",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-08-28",
+        "liters": 12.97,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Cepsa",
+        "total_price": 25,
+        "odometer": 106014,
+        "is_full_tank": true
+      },
+      {
+        "id": "02e2f105-a7c5-4141-a290-e3c87395ff52",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-09-04",
+        "liters": 13.32,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Auchan",
+        "total_price": 25.83,
+        "odometer": 106224,
+        "is_full_tank": true
+      },
+      {
+        "id": "6d992c58-b289-49fd-b915-fa95b9ae5e25",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-09-11",
+        "liters": 15.15,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "",
+        "total_price": 33.21,
+        "odometer": 106468,
+        "is_full_tank": true
+      },
+      {
+        "id": "c671843f-af3d-4aa4-8bd1-5432c81848ef",
+        "vehicle_id": "e6c9eee3-b9ba-41cf-bf9c-58bf209025e7",
+        "date": "2026-09-16",
+        "liters": 13.93,
+        "fuel_type": "Diesel",
+        "petrol_station_brand": "Galp",
+        "total_price": 28.56,
+        "odometer": 293694,
+        "is_full_tank": true
+      },
+      {
+        "id": "25c427ef-73df-48ba-b734-a7a8636d676e",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-09-22",
+        "liters": 12.63,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "",
+        "total_price": 25.93,
+        "odometer": 106650,
+        "is_full_tank": true
+      },
+      {
+        "id": "96c9a628-34df-4644-a308-79b23ddac89b",
+        "vehicle_id": "e6c9eee3-b9ba-41cf-bf9c-58bf209025e7",
+        "date": "2026-09-30",
+        "liters": 23.6,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Plenergy",
+        "total_price": 50.01,
+        "odometer": 294234,
+        "is_full_tank": false
+      },
+      {
+        "id": "8b25f511-15e8-42f9-892f-9750a45506c5",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2026-10-02",
+        "liters": 30,
+        "fuel_type": "Diesel",
+        "petrol_station_brand": "Galp",
+        "total_price": 68.14,
+        "odometer": 294528,
+        "is_full_tank": false
+      },
+      {
+        "id": "0951a11c-c797-41a0-b90a-bd766b1abe5f",
+        "vehicle_id": "e6c9eee3-b9ba-41cf-bf9c-58bf209025e7",
+        "date": "2026-10-07",
+        "liters": 47.18,
+        "fuel_type": "Petrol",
+        "petrol_station_brand": "Plenergy",
+        "total_price": 98.55,
+        "odometer": 295796,
+        "is_full_tank": true
+      }
+    ],
+    "maintenance_events": [
+      {
+        "id": "98a75938-5414-43e1-acc8-f05c182c1d0d",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-07-27 19:27:49",
+        "garage": "Moto Luar",
+        "odometer": 99950,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "fd254707-11b3-4727-92d2-1942c12de25c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2024-12-11 15:48:10",
+        "garage": "Moto Luar",
+        "odometer": 94562,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "db98db66-f763-4192-97d3-de7897f167b2",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2024-06-14 15:46:39",
+        "garage": "Moto Luar",
+        "odometer": 91593,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2024-02-17 15:42:14",
+        "garage": "Moto Luar",
+        "odometer": 85578,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "ec12f18f-dc9c-4c1e-9d70-2d6057259313",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2023-06-29 15:41:33",
+        "garage": "Rodrigues e Rodrigues",
+        "odometer": 83000,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "4c9c6a9a-36cb-4840-922d-3fd555a73921",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2023-04-07 15:41:07",
+        "garage": "Casa",
+        "odometer": 80000,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "af86c7ec-a298-441a-b2e8-bfd9812fca8e",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2022-10-20 15:39:50",
+        "garage": "Brás E Filhos",
+        "odometer": 76550,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "fbc0f997-058d-4de1-9d69-778cfd936d68",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2022-08-27 15:39:19",
+        "garage": "Motoboxe",
+        "odometer": 73000,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "7394fa8a-7e4f-4c2e-a618-6746dafa6e24",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2022-04-20 15:38:24",
+        "garage": "",
+        "odometer": 70956,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "429057b6-2fd3-4694-88b5-30bc9455d341",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2021-11-08 15:35:37",
+        "garage": "Motoboxe",
+        "odometer": 67000,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "ddc16ea7-7d54-4132-9fc9-e2cd000077ce",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2021-09-04 15:33:09",
+        "garage": "Motorense",
+        "odometer": 64000,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "ed6b2e3c-e613-444f-9e4a-372c6a6ef968",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2021-08-19 15:32:34",
+        "garage": "Casa",
+        "odometer": 63000,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "68db3e8c-97c7-4bb2-9ebd-e12ac9c81349",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2021-06-23 15:30:41",
+        "garage": "Brás E Filhos",
+        "odometer": 62452,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "0058e3db-2afb-47a2-a603-204ec03a0fe4",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2021-02-27 15:29:41",
+        "garage": "Casa",
+        "odometer": 62000,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "1ca9a467-7357-4f4d-8187-95c683de3a35",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2020-12-15 15:28:33",
+        "garage": "Motoboxe",
+        "odometer": 58855,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "5ea8f3bd-b51b-46c8-997b-56b8a95e9be6",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2020-11-19 15:27:55",
+        "garage": "Motoboxe",
+        "odometer": 58232,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "78107485-77c3-4bc7-b8c1-c96ebf1ec984",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2020-10-20 15:27:16",
+        "garage": "Motoboxe",
+        "odometer": 57613,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "48c4bcc2-ef91-4bf7-a37e-905d34cbbc4e",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2020-07-06 15:23:57",
+        "garage": "Motoboxe",
+        "odometer": 54338,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "bbe9e105-7b0e-413d-a4a4-a37ea1d309d1",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2019-12-09 15:22:17",
+        "garage": "Motoboxe",
+        "odometer": 50094,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "25e003cc-8886-4574-bcaa-35d24ba6f580",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2019-11-13 15:21:14",
+        "garage": "Casa",
+        "odometer": 49500,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "0fd5ba1f-815c-4246-8033-44a584936a22",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2019-06-28 15:19:42",
+        "garage": "Motoboxe",
+        "odometer": 45489,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2019-06-06 15:16:50",
+        "garage": "",
+        "odometer": 44195,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "aeae4ca8-dd2c-4ad5-a27c-48637390cddc",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2019-05-21 15:16:02",
+        "garage": "Motoboxe",
+        "odometer": 43800,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "000f82f5-0f33-40d3-94df-1e84523f8711",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2019-05-17 15:12:45",
+        "garage": "Motoboxe",
+        "odometer": 43500,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "63d0eee9-55d5-4f3c-9d1e-1fedf314d22b",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2019-02-26 20:58:12",
+        "garage": "Casa",
+        "odometer": 42609,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "3c430567-7358-4ee3-94c7-57f962668728",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-11-24 12:58:11",
+        "garage": "Moto Luar",
+        "odometer": 40100,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "ba32b3fb-d983-44db-b0cb-fc9eebfc0bdb",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2018-08-21 17:49:47",
+        "garage": "Moto Luar",
+        "odometer": 37570,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "1195cbed-7313-4dd1-bc09-c04c0aad3b64",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2017-10-20 14:12:22",
+        "garage": "Moto Luar",
+        "odometer": 32800,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "24e0c1cf-c877-424c-ad71-789c200004ca",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2017-04-21 14:14:27",
+        "garage": "Moto Luar",
+        "odometer": 29600,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "944511fa-6ce8-4d05-a435-a0f481d3e54b",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2016-09-14 14:15:33",
+        "garage": "Moto Luar",
+        "odometer": 24500,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "72004bf7-cbc3-41d5-b626-0b1e0b663c08",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2016-09-07 14:16:18",
+        "garage": "Moto Luar",
+        "odometer": 24300,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "d0f704a6-4d3d-4e61-bac7-f9c267704622",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2016-07-29 14:18:04",
+        "garage": "Moto Luar",
+        "odometer": 23100,
+        "receipt_image_uri": null
+      },
+      {
+        "id": "6e767ea3-7d5e-4bbd-8ffd-3d3232581478",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-12-27 19:20:53",
+        "garage": "Moto Luar",
+        "odometer": 102841,
+        "receipt_image_uri": ""
+      },
+      {
+        "id": "1109ac54-57ff-4a38-ad5f-5e11f9a3b664",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "date": "2025-04-02 16:52:10",
+        "garage": "Brás E Filhos",
+        "odometer": 96400,
+        "receipt_image_uri": ""
+      },
+      {
+        "id": "70f4161e-14e7-40af-8c7e-4eb6255d8f90",
+        "vehicle_id": "e6c9eee3-b9ba-41cf-bf9c-58bf209025e7",
+        "date": "2026-09-25",
+        "garage": "Sr. Carlos",
+        "odometer": 293496,
+        "receipt_image_uri": ""
+      }
+    ],
+    "service_items": [
+      {
+        "id": "3e4bd8f9-001c-4e29-9b08-ec80e0268d7f",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Battery",
+        "price": 53.9,
+        "note": "General são tretas"
+      },
+      {
+        "id": "22047a9a-2d68-4136-9ace-9e3aa943da30",
+        "maintenance_event_id": "ddc16ea7-7d54-4132-9fc9-e2cd000077ce",
+        "service_type": "Battery",
+        "price": 55,
+        "note": "Refez a cablagem do retificador"
+      },
+      {
+        "id": "40ce84df-a124-40d7-90b2-5be8b6e63ced",
+        "maintenance_event_id": "ddc16ea7-7d54-4132-9fc9-e2cd000077ce",
+        "service_type": "Rectifier",
+        "price": 60,
+        "note": "Refez a cablagem do retificador"
+      },
+      {
+        "id": "9f06e260-8db8-4ded-a964-108a7507aaea",
+        "maintenance_event_id": "0fd5ba1f-815c-4246-8033-44a584936a22",
+        "service_type": "Rectifier",
+        "price": 75.65,
+        "note": ""
+      },
+      {
+        "id": "1a017ab8-6544-4734-8343-281bef443c74",
+        "maintenance_event_id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "service_type": "Lights",
+        "price": 9.45,
+        "note": ""
+      },
+      {
+        "id": "e40794a4-67e8-4e4b-bfec-fe0c045ce67f",
+        "maintenance_event_id": "aeae4ca8-dd2c-4ad5-a27c-48637390cddc",
+        "service_type": "Battery",
+        "price": 47.97,
+        "note": "Colocação em casa"
+      },
+      {
+        "id": "c2c40839-1c9c-4022-9d1a-86f42d757f44",
+        "maintenance_event_id": "944511fa-6ce8-4d05-a435-a0f481d3e54b",
+        "service_type": "Battery",
+        "price": 40,
+        "note": ""
+      },
+      {
+        "id": "fd747e74-7a10-46ba-9375-50e15f360e99",
+        "maintenance_event_id": "d0f704a6-4d3d-4e61-bac7-f9c267704622",
+        "service_type": "Throttle",
+        "price": 25,
+        "note": ""
+      },
+      {
+        "id": "a488874f-e7c7-4ba1-96d0-7051f990ad65",
+        "maintenance_event_id": "6e767ea3-7d5e-4bbd-8ffd-3d3232581478",
+        "service_type": "Transmission kit",
+        "price": 184.33,
+        "note": "Sem o pinhão de ataque (ainda estava bom  superpinion)"
+      },
+      {
+        "id": "3010ffef-58da-4b61-9e6b-221d159abb64",
+        "maintenance_event_id": "1109ac54-57ff-4a38-ad5f-5e11f9a3b664",
+        "service_type": "New back tire",
+        "price": 0,
+        "note": ""
+      },
+      {
+        "id": "d594c462-0981-489c-a031-54540b670715",
+        "maintenance_event_id": "98a75938-5414-43e1-acc8-f05c182c1d0d",
+        "service_type": "Brake pads",
+        "price": 30,
+        "note": "Pastilhas de trás"
+      },
+      {
+        "id": "950193e3-eecf-490f-8448-761d42fe70bc",
+        "maintenance_event_id": "98a75938-5414-43e1-acc8-f05c182c1d0d",
+        "service_type": "Chain lubrication",
+        "price": 0,
+        "note": "Pastilhas de trás"
+      },
+      {
+        "id": "9ee12d53-e834-4738-b621-f614b56a521c",
+        "maintenance_event_id": "98a75938-5414-43e1-acc8-f05c182c1d0d",
+        "service_type": "Chain tension",
+        "price": 0,
+        "note": "Pastilhas de trás"
+      },
+      {
+        "id": "577b012f-7a98-4c3c-9261-d7c2f4a6f666",
+        "maintenance_event_id": "98a75938-5414-43e1-acc8-f05c182c1d0d",
+        "service_type": "Oil change",
+        "price": 105,
+        "note": "Pastilhas de trás"
+      },
+      {
+        "id": "8c5fcb16-601b-43c1-8420-006457d16b5b",
+        "maintenance_event_id": "98a75938-5414-43e1-acc8-f05c182c1d0d",
+        "service_type": "Oil filter",
+        "price": 0,
+        "note": "Pastilhas de trás"
+      },
+      {
+        "id": "c06f5b07-20be-4c44-9ef5-57256c8e6704",
+        "maintenance_event_id": "98a75938-5414-43e1-acc8-f05c182c1d0d",
+        "service_type": "Tire pressure",
+        "price": 0,
+        "note": "Pastilhas de trás"
+      },
+      {
+        "id": "acb86e0d-1f0b-4a76-ba9d-3199572a7b85",
+        "maintenance_event_id": "fd254707-11b3-4727-92d2-1942c12de25c",
+        "service_type": "Brake pads",
+        "price": 60.4,
+        "note": "Pastilhas da frente e de tras"
+      },
+      {
+        "id": "ea14c50e-f0e0-4f4d-91b7-1c7b5ba468d6",
+        "maintenance_event_id": "fd254707-11b3-4727-92d2-1942c12de25c",
+        "service_type": "General maintenance",
+        "price": 22.69,
+        "note": "Pastilhas da frente e de tras"
+      },
+      {
+        "id": "e12a04c5-d81c-4efe-a729-9787febe4571",
+        "maintenance_event_id": "fd254707-11b3-4727-92d2-1942c12de25c",
+        "service_type": "Labor cost",
+        "price": 32.92,
+        "note": "Pastilhas da frente e de tras"
+      },
+      {
+        "id": "a5fe2877-641c-4552-a7d3-a05cad052fe9",
+        "maintenance_event_id": "db98db66-f763-4192-97d3-de7897f167b2",
+        "service_type": "Inner tube",
+        "price": 11.79,
+        "note": ""
+      },
+      {
+        "id": "92faccb7-3e73-41f6-b927-adf3069f0cb7",
+        "maintenance_event_id": "db98db66-f763-4192-97d3-de7897f167b2",
+        "service_type": "General maintenance",
+        "price": 23.95,
+        "note": ""
+      },
+      {
+        "id": "5e390474-f713-4b4c-905f-a3c3a3097a13",
+        "maintenance_event_id": "db98db66-f763-4192-97d3-de7897f167b2",
+        "service_type": "Labor cost",
+        "price": 36.58,
+        "note": ""
+      },
+      {
+        "id": "89e51242-dc4a-4753-b5fa-83d45d44784a",
+        "maintenance_event_id": "db98db66-f763-4192-97d3-de7897f167b2",
+        "service_type": "Oil change",
+        "price": 38.4,
+        "note": ""
+      },
+      {
+        "id": "9cb48220-aa04-4dc5-8b53-12639db22baf",
+        "maintenance_event_id": "db98db66-f763-4192-97d3-de7897f167b2",
+        "service_type": "Oil filter",
+        "price": 8.92,
+        "note": ""
+      },
+      {
+        "id": "6a997565-e0df-4bbd-9fe3-f830163f0bcc",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Air filter",
+        "price": 21.57,
+        "note": "General são tretas"
+      },
+      {
+        "id": "a058c9bd-e767-411f-9fa4-caf80581f52e",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Brake pads",
+        "price": 27.9,
+        "note": "General são tretas"
+      },
+      {
+        "id": "e665f3ee-41eb-43bb-9e66-1a6d476cdf34",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "General maintenance",
+        "price": 41.17,
+        "note": "General são tretas"
+      },
+      {
+        "id": "7b6f1d2b-498a-445c-aa43-684e90610e95",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Transmission kit",
+        "price": 189,
+        "note": "General são tretas"
+      },
+      {
+        "id": "cc29862e-8ea9-44d2-99b4-3fc0f7d0e5a6",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Labor cost",
+        "price": 80.48,
+        "note": "General são tretas"
+      },
+      {
+        "id": "5c23b210-7f40-4ab6-8f2d-a0784b4cdcf4",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Oil change",
+        "price": 38.4,
+        "note": "General são tretas"
+      },
+      {
+        "id": "1eda2196-dfdc-40df-b2d4-8fef354f8ee8",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Oil filter",
+        "price": 8.92,
+        "note": "General são tretas"
+      },
+      {
+        "id": "0db32162-4eaa-4209-a961-72dab2cad04d",
+        "maintenance_event_id": "a5816480-c208-4af7-b34b-aed19eb0c605",
+        "service_type": "Spark plugs",
+        "price": 21.12,
+        "note": "General são tretas"
+      },
+      {
+        "id": "5009fdbd-4b1b-4b24-a8c0-4aa9966a2a16",
+        "maintenance_event_id": "ec12f18f-dc9c-4c1e-9d70-2d6057259313",
+        "service_type": "Brake pads",
+        "price": 21.43,
+        "note": ""
+      },
+      {
+        "id": "2850f014-f1dc-402f-82bb-a20b0b7c5166",
+        "maintenance_event_id": "4c9c6a9a-36cb-4840-922d-3fd555a73921",
+        "service_type": "Cdi",
+        "price": 0,
+        "note": ""
+      },
+      {
+        "id": "a835eb95-684f-432a-a9c0-ffa06ea19771",
+        "maintenance_event_id": "af86c7ec-a298-441a-b2e8-bfd9812fca8e",
+        "service_type": "New tires",
+        "price": 163.28,
+        "note": ""
+      },
+      {
+        "id": "eb9efe2f-915c-4a43-96fe-aa0f0c93abcf",
+        "maintenance_event_id": "fbc0f997-058d-4de1-9d69-778cfd936d68",
+        "service_type": "Inner tube",
+        "price": 31.93,
+        "note": ""
+      },
+      {
+        "id": "e2d12e31-361d-4a05-a380-baed2b1f5725",
+        "maintenance_event_id": "7394fa8a-7e4f-4c2e-a618-6746dafa6e24",
+        "service_type": "Air filter",
+        "price": 10,
+        "note": ""
+      },
+      {
+        "id": "a7018f67-c349-43f7-9fa7-344311f74e53",
+        "maintenance_event_id": "7394fa8a-7e4f-4c2e-a618-6746dafa6e24",
+        "service_type": "Oil change",
+        "price": 35,
+        "note": ""
+      },
+      {
+        "id": "5a70d618-72ac-47a3-a054-d0a2f60f8242",
+        "maintenance_event_id": "7394fa8a-7e4f-4c2e-a618-6746dafa6e24",
+        "service_type": "Oil filter",
+        "price": 10,
+        "note": ""
+      },
+      {
+        "id": "d382c589-fb2a-4b86-8c0d-32048d99e3e8",
+        "maintenance_event_id": "429057b6-2fd3-4694-88b5-30bc9455d341",
+        "service_type": "Brake pads",
+        "price": 185.63,
+        "note": "Também mudaram os rolamentos da roda de trás (é barato)"
+      },
+      {
+        "id": "249fc642-4d0a-46b5-9e90-4190716fa15c",
+        "maintenance_event_id": "ed6b2e3c-e613-444f-9e4a-372c6a6ef968",
+        "service_type": "Cdi",
+        "price": 36,
+        "note": ""
+      },
+      {
+        "id": "6ddc685e-f309-40ac-9ef5-0c95a2776fa0",
+        "maintenance_event_id": "68db3e8c-97c7-4bb2-9ebd-e12ac9c81349",
+        "service_type": "New tires",
+        "price": 120.59,
+        "note": ""
+      },
+      {
+        "id": "8ddd8f99-99ec-4093-a939-4ce625a8baa7",
+        "maintenance_event_id": "0058e3db-2afb-47a2-a603-204ec03a0fe4",
+        "service_type": "General maintenance",
+        "price": 0,
+        "note": "Mudanca piscas para os mais curtos"
+      },
+      {
+        "id": "808188ae-60cb-4436-a268-62b976f2a13b",
+        "maintenance_event_id": "1ca9a467-7357-4f4d-8187-95c683de3a35",
+        "service_type": "General maintenance",
+        "price": 43.05,
+        "note": ""
+      },
+      {
+        "id": "651dae35-e9b5-49dc-ab2f-2f5be793ea43",
+        "maintenance_event_id": "1ca9a467-7357-4f4d-8187-95c683de3a35",
+        "service_type": "Oil change",
+        "price": 38.7,
+        "note": ""
+      },
+      {
+        "id": "680bc7b2-5b27-4fe3-adbe-6bbaeb495fe2",
+        "maintenance_event_id": "1ca9a467-7357-4f4d-8187-95c683de3a35",
+        "service_type": "Oil filter",
+        "price": 11.64,
+        "note": ""
+      },
+      {
+        "id": "86e9126f-a35e-4fe3-9129-7f4a084940ff",
+        "maintenance_event_id": "5ea8f3bd-b51b-46c8-997b-56b8a95e9be6",
+        "service_type": "Inner tube",
+        "price": 29.64,
+        "note": ""
+      },
+      {
+        "id": "728d608e-087c-4cad-ac1f-8b1a0a0d4a3a",
+        "maintenance_event_id": "78107485-77c3-4bc7-b8c1-c96ebf1ec984",
+        "service_type": "Brake pads",
+        "price": 52.56,
+        "note": ""
+      },
+      {
+        "id": "5543087e-d8d8-4060-b140-37dd8d161920",
+        "maintenance_event_id": "48c4bcc2-ef91-4bf7-a37e-905d34cbbc4e",
+        "service_type": "Clutch system",
+        "price": 30.14,
+        "note": ""
+      },
+      {
+        "id": "cce0e3b3-f079-41fd-967d-bcdca756f1a7",
+        "maintenance_event_id": "48c4bcc2-ef91-4bf7-a37e-905d34cbbc4e",
+        "service_type": "Inner tube",
+        "price": 12.18,
+        "note": ""
+      },
+      {
+        "id": "78d7bf25-9433-46c7-a002-35b03c75e364",
+        "maintenance_event_id": "48c4bcc2-ef91-4bf7-a37e-905d34cbbc4e",
+        "service_type": "Transmission kit",
+        "price": 130.73,
+        "note": ""
+      },
+      {
+        "id": "0156229b-26df-4fec-837b-dfcf716e9d90",
+        "maintenance_event_id": "48c4bcc2-ef91-4bf7-a37e-905d34cbbc4e",
+        "service_type": "Labor cost",
+        "price": 56.5,
+        "note": ""
+      },
+      {
+        "id": "8d585035-fef8-4fd1-a5bf-d08ced4dc632",
+        "maintenance_event_id": "48c4bcc2-ef91-4bf7-a37e-905d34cbbc4e",
+        "service_type": "New tires",
+        "price": 137.23,
+        "note": ""
+      },
+      {
+        "id": "1e900d85-1001-463e-bff2-006a9759f80f",
+        "maintenance_event_id": "bbe9e105-7b0e-413d-a4a4-a37ea1d309d1",
+        "service_type": "Air filter",
+        "price": 33.96,
+        "note": "Cabo velocímetro"
+      },
+      {
+        "id": "4f00b25e-9b2d-4d6e-b6d9-a43b12382425",
+        "maintenance_event_id": "bbe9e105-7b0e-413d-a4a4-a37ea1d309d1",
+        "service_type": "Brake pads",
+        "price": 47.8,
+        "note": "Cabo velocímetro"
+      },
+      {
+        "id": "7ac6c420-c026-456d-b27d-85d80cb6a013",
+        "maintenance_event_id": "bbe9e105-7b0e-413d-a4a4-a37ea1d309d1",
+        "service_type": "General maintenance",
+        "price": 33.69,
+        "note": "Cabo velocímetro"
+      },
+      {
+        "id": "cef7a9e2-be89-483a-b1d9-0c09483d1ca8",
+        "maintenance_event_id": "bbe9e105-7b0e-413d-a4a4-a37ea1d309d1",
+        "service_type": "Labor cost",
+        "price": 36.9,
+        "note": "Cabo velocímetro"
+      },
+      {
+        "id": "2538cd99-9879-4ffb-ac33-a5ccb33e84a1",
+        "maintenance_event_id": "25e003cc-8886-4574-bcaa-35d24ba6f580",
+        "service_type": "Chain lubrication",
+        "price": 0,
+        "note": ""
+      },
+      {
+        "id": "34e7ba97-92eb-488d-be3f-023b25e80e01",
+        "maintenance_event_id": "25e003cc-8886-4574-bcaa-35d24ba6f580",
+        "service_type": "Chain tension",
+        "price": 0,
+        "note": ""
+      },
+      {
+        "id": "d24f82d2-dee4-4935-a818-19f8061eef9e",
+        "maintenance_event_id": "0fd5ba1f-815c-4246-8033-44a584936a22",
+        "service_type": "Labor cost",
+        "price": 36.9,
+        "note": ""
+      },
+      {
+        "id": "b56a2fa9-7f1d-4904-ac8a-7b221ca58080",
+        "maintenance_event_id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "service_type": "Brake pads",
+        "price": 47.8,
+        "note": ""
+      },
+      {
+        "id": "869d783b-3e63-40f7-a035-a790d3da894f",
+        "maintenance_event_id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "service_type": "Cooling system",
+        "price": 20.91,
+        "note": ""
+      },
+      {
+        "id": "ba1439d8-ea14-42f9-b65e-7f3c9092a56c",
+        "maintenance_event_id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "service_type": "General maintenance",
+        "price": 62,
+        "note": ""
+      },
+      {
+        "id": "207dd937-97eb-49e0-bca7-8051a5d92eef",
+        "maintenance_event_id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "service_type": "Labor cost",
+        "price": 55.35,
+        "note": ""
+      },
+      {
+        "id": "d2972c62-5fcc-4b0c-b320-1e67a68f907e",
+        "maintenance_event_id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "service_type": "Oil change",
+        "price": 38.7,
+        "note": ""
+      },
+      {
+        "id": "998f16e0-b41f-41fb-b9d1-5cb4cd609840",
+        "maintenance_event_id": "7fe565c2-ee71-4319-8fa6-a8e6cf634312",
+        "service_type": "Oil filter",
+        "price": 11.38,
+        "note": ""
+      },
+      {
+        "id": "ba37b10d-7c20-4265-a216-0a0798c3320d",
+        "maintenance_event_id": "000f82f5-0f33-40d3-94df-1e84523f8711",
+        "service_type": "General maintenance",
+        "price": 5.3,
+        "note": "Parafuso pivot manete tração substituição em casa"
+      },
+      {
+        "id": "98574da8-982b-4dd7-82ce-499e69747e80",
+        "maintenance_event_id": "63d0eee9-55d5-4f3c-9d1e-1fedf314d22b",
+        "service_type": "Oil change",
+        "price": 12,
+        "note": ""
+      },
+      {
+        "id": "82c57cb8-e210-4137-ace8-e599b2c63dc2",
+        "maintenance_event_id": "3c430567-7358-4ee3-94c7-57f962668728",
+        "service_type": "Clutch support barrel",
+        "price": 35,
+        "note": "Moto limpa impecável"
+      },
+      {
+        "id": "f84bda5f-c0f2-4006-aea9-131f75cfc43c",
+        "maintenance_event_id": "3c430567-7358-4ee3-94c7-57f962668728",
+        "service_type": "Labor cost",
+        "price": 60,
+        "note": "Moto limpa impecável"
+      },
+      {
+        "id": "5977ba12-fb79-4e00-a051-9d06f5d2ead1",
+        "maintenance_event_id": "3c430567-7358-4ee3-94c7-57f962668728",
+        "service_type": "Steering bearings",
+        "price": 70,
+        "note": "Moto limpa impecável"
+      },
+      {
+        "id": "7bb64a69-accb-4294-80c7-333b31d03c5d",
+        "maintenance_event_id": "ba32b3fb-d983-44db-b0cb-fc9eebfc0bdb",
+        "service_type": "Oil change",
+        "price": 30,
+        "note": ""
+      },
+      {
+        "id": "a4a04796-12d3-4d1d-b7bf-3d0590cfd5ea",
+        "maintenance_event_id": "1195cbed-7313-4dd1-bc09-c04c0aad3b64",
+        "service_type": "Engine tuning",
+        "price": 50,
+        "note": ""
+      },
+      {
+        "id": "30d0e63b-f4b5-47f8-8a30-ba59dcada6e4",
+        "maintenance_event_id": "1195cbed-7313-4dd1-bc09-c04c0aad3b64",
+        "service_type": "Oil change",
+        "price": 20,
+        "note": ""
+      },
+      {
+        "id": "81db9a5a-eeab-4101-9b48-e0f02bec7830",
+        "maintenance_event_id": "24e0c1cf-c877-424c-ad71-789c200004ca",
+        "service_type": "New tires",
+        "price": 105,
+        "note": "Só traseiro"
+      },
+      {
+        "id": "9682f6dd-2d49-49b8-a8ff-4ed8798c71b5",
+        "maintenance_event_id": "72004bf7-cbc3-41d5-b626-0b1e0b663c08",
+        "service_type": "New tires",
+        "price": 100,
+        "note": "Pneu da frente"
+      },
+      {
+        "id": "0d5b3e53-2bc6-4ac4-b936-e31efdb348d9",
+        "maintenance_event_id": "1109ac54-57ff-4a38-ad5f-5e11f9a3b664",
+        "service_type": "New front tire",
+        "price": 232.74,
+        "note": "Dunlop trailmax"
+      },
+      {
+        "id": "c1145201-f42e-4a7f-8779-9c6c4b12f029",
+        "maintenance_event_id": "70f4161e-14e7-40af-8c7e-4eb6255d8f90",
+        "service_type": "Brake pad change (front)",
+        "price": 40,
+        "note": ""
+      },
+      {
+        "id": "82cc2d25-34f0-4f95-8b4a-94b02f0a24a3",
+        "maintenance_event_id": "70f4161e-14e7-40af-8c7e-4eb6255d8f90",
+        "service_type": "Oil change",
+        "price": 45,
+        "note": ""
+      },
+      {
+        "id": "4d0c3073-b312-4fce-9614-36567eebd40f",
+        "maintenance_event_id": "70f4161e-14e7-40af-8c7e-4eb6255d8f90",
+        "service_type": "Rela egr",
+        "price": 5,
+        "note": ""
+      },
+      {
+        "id": "cfb1d7a6-cc1c-4f9d-a878-8610a35e256e",
+        "maintenance_event_id": "70f4161e-14e7-40af-8c7e-4eb6255d8f90",
+        "service_type": "Oil filter",
+        "price": 11,
+        "note": ""
+      },
+      {
+        "id": "4996c210-3a65-4a6e-af71-4f9e384ee62c",
+        "maintenance_event_id": "70f4161e-14e7-40af-8c7e-4eb6255d8f90",
+        "service_type": "Man hours",
+        "price": 135,
+        "note": ""
+      },
+      {
+        "id": "ec5df579-286b-4306-864b-658fbbeafde5",
+        "maintenance_event_id": "70f4161e-14e7-40af-8c7e-4eb6255d8f90",
+        "service_type": "Anticongelante",
+        "price": 10,
+        "note": ""
+      }
+    ],
+    "accessories": [],
+    "expenses": [],
+    "reminders": [
+      {
+        "id": "8b231d4f-d3da-4ee1-b010-7061c3c8fc82",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "service_type": "Transmission kit",
+        "interval_kms": 4000,
+        "notify_before_kms": 200,
+        "interval_months": null,
+        "repeat_interval_days": 15,
+        "active_notification_ids": null,
+        "created_at": "2026-08-18T09:36:09.156778+00:00"
+      },
+      {
+        "id": "722591e3-2bd1-45db-87e8-490c5451909f",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "service_type": "Brake fluid replacement",
+        "interval_kms": 18000,
+        "notify_before_kms": 500,
+        "interval_months": 18,
+        "repeat_interval_days": 30,
+        "active_notification_ids": "358d9037-f06b-4953-93b7-5fe81734bcbc,27df1845-64f1-41ad-ad4b-d12dac16191c,3fe5893f-fd3a-4dbb-a335-6528fb14a106,825248f4-c10d-4f4f-b5fc-277501234a81,27fd06db-3156-48da-89ea-c63673ba6a10,67175400-4ee0-40ce-aec5-34f26ee9ea81,978cee55-c020-4f2d-9a6d-0d5d6be47e16,0a67847f-0f36-47b1-b5f6-4d3b3f75ddbc,d9c138f6-18c1-42b4-b999-8e15bbcf8bab,cb90a171-3a60-47d8-b868-a4f65c5038f6",
+        "created_at": "2026-08-18T09:36:58.79432+00:00"
+      },
+      {
+        "id": "5b17d669-1f76-4914-8bbd-b1b96a69fb3c",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "service_type": "Air filter",
+        "interval_kms": 18000,
+        "notify_before_kms": 500,
+        "interval_months": 18,
+        "repeat_interval_days": 30,
+        "active_notification_ids": "a55970fc-22bd-4e4f-98fb-245fa78e9bec,f15a6b19-5371-4cc2-8cac-9b7c342b2b6e,729bb0ee-7082-4e9d-a62e-611880ff94b3,34d65c77-d28b-40ac-8393-26785dec7682,159ab008-6171-4ad3-9ddd-5cd6e7fe7b65,167465a5-19bb-4dce-bd12-73dbd3d57244,276324d8-c806-45af-aedb-404754961317,6cda4a31-23e2-4b5c-8762-182a999d5434,4713b026-689d-4bf9-9299-584ac18795ba,70c538f2-c0f3-475c-a619-6bba5b106b06",
+        "created_at": "2026-08-18T09:33:31.828146+00:00"
+      },
+      {
+        "id": "47fbebd5-fdff-4571-b57a-a714401e8c46",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "service_type": "Spark plugs",
+        "interval_kms": 12000,
+        "notify_before_kms": 500,
+        "interval_months": 12,
+        "repeat_interval_days": 30,
+        "active_notification_ids": "cd122ab9-3a69-48cc-915c-9260202d3d13,db04265e-42a7-4147-803c-294e581b3a6f,38afd114-5334-4ef9-be51-9508b7b66883,7cad41ff-5fa8-4495-b6a2-7050f68d72f8,d08211d5-4caf-4cd1-b76a-f494ae903c71,d2ec5328-a0fd-4e38-a90a-452b77f9f8a1,b8874c80-ab9d-45a2-a1e2-c941520050f1,4572e89a-86ef-44d3-bfa0-4ab183da0108,abbdc715-481a-420a-86d4-ef0788eb373b,b76fa440-4596-4a5a-8d63-04c1efa26791",
+        "created_at": "2026-08-18T09:31:17.830528+00:00"
+      },
+      {
+        "id": "c09717dd-7d94-4a85-a1dc-f64d3f199ee3",
+        "vehicle_id": "e6c9eee3-b9ba-41cf-bf9c-58bf209025e7",
+        "service_type": "Oil check",
+        "interval_kms": 1000,
+        "notify_before_kms": 0,
+        "interval_months": 2,
+        "repeat_interval_days": 7,
+        "active_notification_ids": null,
+        "created_at": "2026-09-23T11:26:32.928368+00:00"
+      },
+      {
+        "id": "845a4323-8fa2-4b52-8726-c60de890b2ed",
+        "vehicle_id": "3c32b2dc-df2c-44cc-9933-a75a8a5f904c",
+        "service_type": "Oil change",
+        "interval_kms": 4000,
+        "notify_before_kms": 500,
+        "interval_months": 12,
+        "repeat_interval_days": 15,
+        "active_notification_ids": "272b30af-819d-462f-b5c8-3f19722b95c8,6d1891b6-60a5-4d67-b4eb-62a3d2bc4fb6,5a72e17c-ec14-41ee-a396-fdf95ecacb30,de988359-0e81-40ad-a73a-163986dc173a,9e5123a1-f448-4942-9430-67bf58c7af12,814732b8-d666-4a90-897d-303bbd9ce37f,a8192706-a9b7-4dc1-a7be-1706728efb1f,f2746d58-f531-4f00-bb38-1c23e6f35548,c176864f-4d3b-4b99-84bd-d5f1c4152796,2630fd8b-d6ab-459f-9d89-2dcf13234fc7",
+        "created_at": "2026-08-14T16:07:04.020808+00:00"
+      }
+    ]
+  }
+}

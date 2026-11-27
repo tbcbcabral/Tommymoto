@@ -17,7 +17,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useVehicles, useAllLogs, useReminders } from "@/hooks/useData";
 import { formatNumber } from "../../lib/utils";
 import { usePowerSync } from "@powersync/react";
-import { syncDirectFromSupabase } from "../../lib/directSync";
+import { syncDirectFromSupabase, restoreFromEmbeddedBackup } from "../../lib/directSync";
 
 export default function DashboardScreen() {
   const theme = useTheme();
@@ -344,7 +344,7 @@ export default function DashboardScreen() {
     try {
       const res = await syncDirectFromSupabase();
       if (res.success) {
-        Alert.alert("Sincronização Concluída", `${res.count} registos sincronizados da nuvem.`);
+        Alert.alert("Sincronização Concluída", `${res.count} registos sincronizados.`);
       } else {
         Alert.alert("Aviso de Sincronização", res.error || "Não foi possível descarregar dados.");
       }
@@ -353,6 +353,34 @@ export default function DashboardScreen() {
     } finally {
       setSyncing(false);
     }
+  };
+
+  const handleRestoreBackup = async () => {
+    Alert.alert(
+      "Restaurar Base de Dados",
+      "Deseja restaurar todos os registos do backup (Honda Transalp, Skoda Octavia, XR125, 56 abastecimentos e manutenções)?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Restaurar Agora",
+          onPress: async () => {
+            setSyncing(true);
+            try {
+              const res = await restoreFromEmbeddedBackup();
+              if (res.success) {
+                Alert.alert("Sucesso!", `Foram restaurados com sucesso ${res.count} registos (Transalp, Octavia, abastecimentos e manutenções)!`);
+              } else {
+                Alert.alert("Erro", res.error || "Falha ao restaurar.");
+              }
+            } catch (err: any) {
+              Alert.alert("Erro", err?.message || "Falha ao restaurar backup.");
+            } finally {
+              setSyncing(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -669,6 +697,16 @@ export default function DashboardScreen() {
           onPress={handleManualSync}
         >
           Sincronizar com Nuvem (Supabase)
+        </Button>
+
+        <Button
+          mode="contained"
+          icon="backup-restore"
+          loading={syncing}
+          style={{ marginTop: 12, backgroundColor: "#2e7d32" }}
+          onPress={handleRestoreBackup}
+        >
+          Restaurar Dados (Transalp & Octavia)
         </Button>
 
         <Button
